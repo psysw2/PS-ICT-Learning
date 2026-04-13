@@ -1,842 +1,776 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-HK">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Python 學習平台</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Noto Sans TC', sans-serif; }
-        .code-area { font-family: 'Courier New', Consolas, monospace; }
-        .fade-in { animation: fadeIn 0.3s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .sidebar-item { transition: all 0.2s; }
-        .sidebar-item:hover { background-color: #EEF2FF; }
-        .sidebar-item.active { background-color: #E0E7FF; color: #4338CA; font-weight: 700; }
-        textarea.code-area { tab-size: 4; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSE ICT Python 學習系統</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--pri:#4361ee;--pri-dark:#3a56d4;--sec:#7209b7;--accent:#4cc9f0;--success:#06d6a0;--warn:#ffd166;--danger:#ef476f;--bg:#f0f2f5;--card:#fff;--text:#2b2d42;--text-light:#8d99ae;--sidebar-w:260px;--radius:12px;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Microsoft JhengHei',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+.hidden{display:none!important;}
+a{color:var(--pri);text-decoration:none;}
+button{cursor:pointer;border:none;font-family:inherit;font-size:inherit;}
+input,select,textarea{font-family:inherit;font-size:14px;}
+
+.login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#4361ee 0%,#7209b7 100%);padding:20px;}
+.login-box{background:#fff;border-radius:var(--radius);padding:40px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.login-box h1{text-align:center;color:var(--pri);margin-bottom:8px;font-size:24px;}
+.login-box .subtitle{text-align:center;color:var(--text-light);margin-bottom:30px;font-size:14px;}
+.login-box .logo{text-align:center;font-size:48px;margin-bottom:16px;}
+.form-group{margin-bottom:18px;}
+.form-group label{display:block;margin-bottom:6px;font-weight:600;font-size:14px;color:#555;}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px;transition:.2s;}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--pri);outline:none;box-shadow:0 0 0 3px rgba(67,97,238,.15);}
+.form-group .hint{font-size:12px;color:var(--text-light);margin-top:4px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.btn{padding:10px 20px;border-radius:8px;font-weight:600;font-size:14px;transition:.2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-pri{background:var(--pri);color:#fff;}.btn-pri:hover{background:var(--pri-dark);}
+.btn-sec{background:var(--sec);color:#fff;}.btn-sec:hover{background:#5c078f;}
+.btn-success{background:var(--success);color:#fff;}.btn-success:hover{background:#05b88a;}
+.btn-danger{background:var(--danger);color:#fff;}.btn-danger:hover{background:#d63d60;}
+.btn-warn{background:var(--warn);color:#333;}.btn-warn:hover{background:#f0c040;}
+.btn-outline{background:transparent;color:var(--pri);border:2px solid var(--pri);}.btn-outline:hover{background:var(--pri);color:#fff;}
+.btn-outline-danger{background:transparent;color:var(--danger);border:2px solid var(--danger);}.btn-outline-danger:hover{background:var(--danger);color:#fff;}
+.btn-full{width:100%;justify-content:center;padding:12px;}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:6px;}
+.btn-icon{padding:6px 8px;border-radius:6px;font-size:12px;}
+.btn-group{display:flex;gap:4px;flex-wrap:wrap;}
+
+.preview-bar{background:linear-gradient(90deg,#f72585,#7209b7);color:#fff;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;font-size:14px;font-weight:600;position:sticky;top:0;z-index:999;flex-wrap:wrap;gap:8px;box-shadow:0 2px 12px rgba(247,37,133,.3);}
+.preview-bar .preview-label{display:flex;align-items:center;gap:8px;}
+.preview-bar .preview-label i{font-size:18px;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+.preview-bar .btn-back{background:rgba(255,255,255,.2);color:#fff;border:2px solid rgba(255,255,255,.5);padding:6px 16px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:6px;}
+.preview-bar .btn-back:hover{background:rgba(255,255,255,.35);}
+.preview-bar select{background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:6px;padding:4px 8px;font-size:13px;cursor:pointer;}
+.preview-bar select option{color:#333;background:#fff;}
+
+.layout{display:flex;min-height:100vh;}
+.sidebar{width:var(--sidebar-w);background:linear-gradient(180deg,#2b2d42 0%,#1a1b2e 100%);color:#fff;position:fixed;top:0;left:0;height:100vh;overflow-y:auto;z-index:100;transition:transform .3s;}
+.sidebar-header{padding:20px;text-align:center;border-bottom:1px solid rgba(255,255,255,.1);}
+.sidebar-header h2{font-size:16px;margin-bottom:4px;}
+.sidebar-header small{color:rgba(255,255,255,.5);font-size:12px;}
+.sidebar-header .role-badge{display:inline-block;margin-top:6px;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:700;}
+.role-admin{background:rgba(239,71,111,.2);color:#ef476f;}
+.role-teacher{background:rgba(67,97,238,.2);color:#4cc9f0;}
+.sidebar-nav{padding:12px 0;}
+.nav-section{padding:6px 20px 4px;font-size:11px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;margin-top:6px;}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 20px;color:rgba(255,255,255,.7);cursor:pointer;transition:.2s;font-size:14px;border-left:3px solid transparent;}
+.nav-item:hover{background:rgba(255,255,255,.08);color:#fff;}
+.nav-item.active{background:rgba(67,97,238,.2);color:var(--accent);border-left-color:var(--accent);}
+.nav-item i{width:20px;text-align:center;}
+.nav-item.preview-switch{background:rgba(247,37,133,.15);color:#f72585;border-left-color:#f72585;}
+.nav-item.preview-switch:hover{background:rgba(247,37,133,.25);color:#ff6eb4;}
+.sidebar-footer{position:absolute;bottom:0;width:100%;padding:16px 20px;border-top:1px solid rgba(255,255,255,.1);}
+.main-content{margin-left:var(--sidebar-w);flex:1;min-height:100vh;}
+.topbar{background:#fff;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 3px rgba(0,0,0,.08);position:sticky;top:0;z-index:50;}
+.topbar h2{font-size:18px;}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.user-badge{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--bg);border-radius:20px;font-size:13px;}
+.user-badge.preview{background:linear-gradient(90deg,rgba(247,37,133,.1),rgba(114,9,183,.1));border:1px dashed #f72585;}
+.content-area{padding:24px;}
+.hamburger{display:none;background:none;font-size:20px;color:var(--text);}
+
+.card{background:#fff;border-radius:var(--radius);padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:20px;}
+.card h3{font-size:16px;margin-bottom:12px;}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px;}
+.stat-card{background:#fff;border-radius:var(--radius);padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:center;gap:16px;}
+.stat-icon{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;}
+.stat-icon.blue{background:linear-gradient(135deg,#4361ee,#4cc9f0);}
+.stat-icon.green{background:linear-gradient(135deg,#06d6a0,#1b9aaa);}
+.stat-icon.purple{background:linear-gradient(135deg,#7209b7,#b5179e);}
+.stat-icon.orange{background:linear-gradient(135deg,#f72585,#ffd166);}
+.stat-icon.red{background:linear-gradient(135deg,#e63946,#ef476f);}
+
+.topic-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+.topic-card{background:#fff;border-radius:var(--radius);padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);cursor:pointer;transition:.2s;border-left:4px solid var(--pri);position:relative;overflow:hidden;}
+.topic-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.12);}
+.topic-card h4{font-size:15px;margin-bottom:6px;}
+.topic-card p{font-size:13px;color:var(--text-light);margin-bottom:12px;}
+.topic-card .badge{display:inline-block;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.badge-blue{background:rgba(67,97,238,.1);color:var(--pri);}
+.badge-green{background:rgba(6,214,160,.1);color:#05a67c;}
+
+.quiz-container{max-width:800px;margin:0 auto;}
+.quiz-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;}
+.quiz-progress{width:100%;height:8px;background:#e0e0e0;border-radius:4px;margin-bottom:20px;overflow:hidden;}
+.quiz-progress-bar{height:100%;background:linear-gradient(90deg,var(--pri),var(--accent));border-radius:4px;transition:.3s;}
+.question-card{background:#fff;border-radius:var(--radius);padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:20px;}
+.question-num{display:inline-block;background:var(--pri);color:#fff;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:600;margin-bottom:12px;}
+.question-text{font-size:15px;line-height:1.7;margin-bottom:16px;white-space:pre-wrap;}
+.question-text code,.code-block{background:#2b2d42;color:#a8e6cf;padding:2px 6px;border-radius:4px;font-family:'Consolas','Monaco','Courier New',monospace;font-size:13px;}
+.code-block{display:block;padding:16px;border-radius:8px;margin:12px 0;white-space:pre;overflow-x:auto;line-height:1.6;}
+.options{display:flex;flex-direction:column;gap:10px;}
+.option{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border:2px solid #e8e8e8;border-radius:8px;cursor:pointer;transition:.2s;font-size:14px;line-height:1.5;}
+.option:hover{border-color:var(--pri);background:rgba(67,97,238,.03);}
+.option.selected{border-color:var(--pri);background:rgba(67,97,238,.08);}
+.option.correct{border-color:var(--success);background:rgba(6,214,160,.08);}
+.option.wrong{border-color:var(--danger);background:rgba(239,71,111,.08);}
+.option-letter{width:28px;height:28px;border-radius:50%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;}
+.option.selected .option-letter{background:var(--pri);color:#fff;}
+.option.correct .option-letter{background:var(--success);color:#fff;}
+.option.wrong .option-letter{background:var(--danger);color:#fff;}
+.answer-input{width:100%;padding:10px;border:2px solid #e0e0e0;border-radius:8px;font-family:'Consolas',monospace;font-size:14px;}
+.explanation{background:#f8f9fa;border-left:4px solid var(--pri);padding:12px 16px;border-radius:0 8px 8px 0;margin-top:12px;font-size:13px;line-height:1.6;}
+
+.code-editor-wrapper{border:2px solid #e0e0e0;border-radius:8px;overflow:hidden;}
+.code-editor{width:100%;min-height:200px;padding:16px;font-family:'Consolas','Monaco','Courier New',monospace;font-size:14px;line-height:1.6;border:none;resize:vertical;background:#1e1e2e;color:#cdd6f4;outline:none;}
+.code-output{background:#1e1e2e;color:#a6e3a1;padding:16px;border-radius:8px;font-family:'Consolas',monospace;font-size:13px;min-height:60px;white-space:pre-wrap;margin-top:8px;max-height:200px;overflow-y:auto;}
+.code-output.error{color:#f38ba8;}
+
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:14px;}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid #eee;}
+th{background:#f8f9fa;font-weight:600;color:#555;font-size:13px;white-space:nowrap;}
+tr:hover td{background:#f8f9fa;}
+.score-high{color:var(--success);font-weight:700;}
+.score-mid{color:var(--warn);font-weight:700;}
+.score-low{color:var(--danger);font-weight:700;}
+
+.tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:2px solid #eee;flex-wrap:wrap;}
+.tab{padding:10px 18px;cursor:pointer;font-size:14px;font-weight:600;color:var(--text-light);border-bottom:2px solid transparent;margin-bottom:-2px;transition:.2s;white-space:nowrap;display:flex;align-items:center;gap:6px;}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--pri);border-bottom-color:var(--pri);}
+.tab .tab-count{background:var(--bg);padding:1px 7px;border-radius:10px;font-size:11px;}
+.tab.active .tab-count{background:rgba(67,97,238,.1);color:var(--pri);}
+
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal{background:#fff;border-radius:var(--radius);padding:30px;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.modal h3{margin-bottom:20px;font-size:18px;}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;flex-wrap:wrap;}
+.modal-section{background:#f8f9fa;border-radius:8px;padding:16px;margin-bottom:16px;}
+.modal-section h4{font-size:14px;color:#555;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.modal-divider{border:none;border-top:1px solid #eee;margin:16px 0;}
+
+.toast-container{position:fixed;top:20px;right:20px;z-index:300;display:flex;flex-direction:column;gap:8px;}
+.toast{padding:14px 20px;border-radius:8px;color:#fff;font-size:14px;font-weight:500;animation:slideIn .3s;box-shadow:0 4px 12px rgba(0,0,0,.15);max-width:350px;}
+.toast-success{background:var(--success);}.toast-error{background:var(--danger);}.toast-info{background:var(--pri);}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+
+.result-summary{text-align:center;padding:40px 20px;}
+.result-score{font-size:64px;font-weight:800;margin:20px 0;}
+.result-score.high{color:var(--success);}.result-score.mid{color:var(--warn);}.result-score.low{color:var(--danger);}
+.result-circle{width:120px;height:120px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:36px;}
+.result-circle.high{background:rgba(6,214,160,.15);color:var(--success);}
+.result-circle.mid{background:rgba(255,209,102,.15);color:#e6a800;}
+.result-circle.low{background:rgba(239,71,111,.15);color:var(--danger);}
+
+.assign-card{background:#fff;border-radius:var(--radius);padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;border-left:4px solid var(--pri);}
+.assign-info h4{font-size:15px;margin-bottom:4px;}
+.assign-info p{font-size:13px;color:var(--text-light);}
+.assign-meta{display:flex;gap:16px;font-size:12px;color:var(--text-light);margin-top:6px;flex-wrap:wrap;}
+
+.student-info-card{display:flex;align-items:center;gap:16px;padding:16px;background:linear-gradient(135deg,rgba(67,97,238,.05),rgba(114,9,183,.05));border-radius:10px;margin-bottom:16px;}
+.student-avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--pri),var(--sec));display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700;flex-shrink:0;}
+.student-avatar.admin-av{background:linear-gradient(135deg,#e63946,#ef476f);}
+.student-avatar.teacher-av{background:linear-gradient(135deg,#f72585,#ffd166);}
+.student-meta{font-size:13px;color:var(--text-light);}
+.student-meta span{display:block;margin-top:2px;}
+.password-field{display:flex;align-items:center;gap:8px;}
+.password-field input{flex:1;}
+.password-toggle{background:none;border:2px solid #e0e0e0;border-radius:8px;padding:10px 14px;cursor:pointer;color:var(--text-light);transition:.2s;}
+.password-toggle:hover{border-color:var(--pri);color:var(--pri);}
+
+.perm-tag{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;}
+.perm-admin{background:rgba(239,71,111,.1);color:#ef476f;}
+.perm-teacher{background:rgba(67,97,238,.1);color:var(--pri);}
+.perm-student{background:rgba(6,214,160,.1);color:#05a67c;}
+
+.student-picker{border:2px solid #e0e0e0;border-radius:8px;overflow:hidden;}
+.student-picker-header{display:flex;gap:8px;padding:10px;background:#f8f9fa;border-bottom:1px solid #eee;flex-wrap:wrap;align-items:center;}
+.student-picker-header input{flex:1;min-width:120px;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;}
+.student-picker-header select{padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;min-width:90px;}
+.student-picker-actions{display:flex;gap:6px;padding:8px 10px;background:#f0f2f5;border-bottom:1px solid #eee;flex-wrap:wrap;align-items:center;}
+.student-picker-actions .pick-info{font-size:12px;color:var(--text-light);margin-left:auto;}
+.student-picker-list{max-height:260px;overflow-y:auto;padding:4px 0;}
+.student-pick-item{display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:pointer;transition:.15s;font-size:13px;border-bottom:1px solid #f5f5f5;}
+.student-pick-item:hover{background:#f0f4ff;}
+.student-pick-item.checked{background:rgba(67,97,238,.06);}
+.student-pick-item input[type=checkbox]{width:16px;height:16px;accent-color:var(--pri);cursor:pointer;flex-shrink:0;}
+.student-pick-item .pick-name{font-weight:600;flex:1;}
+.student-pick-item .pick-class{font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(67,97,238,.08);color:var(--pri);font-weight:600;}
+.student-pick-item .pick-id{font-size:11px;color:var(--text-light);}
+.student-picker-empty{padding:20px;text-align:center;color:var(--text-light);font-size:13px;}
+.class-tag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;margin:2px;background:rgba(67,97,238,.08);color:var(--pri);}
+.selected-summary{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;}
+.selected-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;background:rgba(67,97,238,.1);color:var(--pri);}
+.selected-chip .chip-remove{cursor:pointer;font-weight:700;margin-left:2px;color:var(--danger);font-size:13px;}
+.selected-chip .chip-remove:hover{color:#c00;}
+
+.loading-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,.85);z-index:500;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+.loading-spinner{width:48px;height:48px;border:4px solid #e0e0e0;border-top-color:var(--pri);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-text{font-size:15px;color:var(--text-light);font-weight:500;}
+
+@media(max-width:768px){
+.sidebar{transform:translateX(-100%);}
+.sidebar.open{transform:translateX(0);}
+.main-content{margin-left:0;}
+.hamburger{display:block;}
+.content-area{padding:16px;}
+.stats-grid{grid-template-columns:1fr 1fr;}
+.topic-grid{grid-template-columns:1fr;}
+.modal{padding:20px;margin:10px;}
+.preview-bar{flex-direction:column;align-items:flex-start;}
+.form-row{grid-template-columns:1fr;}
+}
+@media(max-width:480px){
+.stats-grid{grid-template-columns:1fr;}
+.login-box{padding:24px;}
+}
+</style>
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body>
+<div id="app"></div>
+<div id="toast-container" class="toast-container"></div>
+<div id="loading-overlay" class="loading-overlay hidden"><div class="loading-spinner"></div><div class="loading-text">載入中...</div></div>
 
-<!-- ========== TOAST ========== -->
-<div id="toast" class="fixed top-4 right-4 z-50 hidden transition-all">
-    <div class="px-6 py-3 rounded-lg shadow-lg text-white text-sm font-medium max-w-sm"></div>
-</div>
-
-<!-- ========== LOADING ========== -->
-<div id="loading" class="fixed inset-0 bg-black bg-opacity-30 z-40 hidden flex items-center justify-center">
-    <div class="bg-white rounded-xl p-6 shadow-xl flex items-center gap-3">
-        <svg class="animate-spin h-6 w-6 text-indigo-600" viewBox="0 0 24 24" fill="none">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-        </svg>
-        <span class="text-gray-700">載入中...</span>
-    </div>
-</div>
-
-<!-- ========== CONFIRM MODAL ========== -->
-<div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm">
-        <p id="confirm-message" class="text-gray-800 font-medium mb-6"></p>
-        <div class="flex justify-end gap-3">
-            <button onclick="confirmCancel()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded-lg text-sm transition">取消</button>
-            <button onclick="confirmOk()" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg text-sm transition">確定</button>
-        </div>
-    </div>
-</div>
-
-<!-- ========== LOGIN PAGE ========== -->
-<div id="page-login" class="min-h-screen flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md fade-in">
-        <div class="text-center mb-8">
-            <div class="text-6xl mb-4">🐍</div>
-            <h1 class="text-3xl font-bold text-gray-800">Python 學習平台</h1>
-            <p class="text-gray-500 mt-2">請登入你的帳號</p>
-        </div>
-        <div class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">帳號</label>
-                <input id="login-username" type="text" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition" placeholder="輸入帳號">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">密碼</label>
-                <input id="login-password" type="password" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition" placeholder="輸入密碼">
-            </div>
-            <div id="login-error" class="text-red-500 text-sm hidden"></div>
-            <button onclick="handleLogin()" id="login-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition">登入</button>
-            <p class="text-center text-sm text-gray-500">
-                還沒有帳號？<a href="#" onclick="showPage('register');return false;" class="text-indigo-600 hover:underline font-medium">立即註冊</a>
-            </p>
-            <div class="border-t pt-4 mt-4">
-                <p class="text-xs text-gray-400 text-center">預設老師帳號：teacher / teacher123</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ========== REGISTER PAGE ========== -->
-<div id="page-register" class="min-h-screen flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md fade-in">
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-gray-800">📋 註冊帳號</h1>
-            <p class="text-gray-500 mt-2">建立你的學習帳號</p>
-        </div>
-        <div class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">姓名 *</label>
-                <input id="reg-name" type="text" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none transition" placeholder="輸入真實姓名">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">帳號 *</label>
-                <input id="reg-username" type="text" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none transition" placeholder="輸入帳號（英文或數字）">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">密碼 *</label>
-                <input id="reg-password" type="password" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none transition" placeholder="輸入密碼">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">身份</label>
-                <select id="reg-role" onchange="toggleClassField()" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none transition bg-white">
-                    <option value="student">學生</option>
-                    <option value="teacher">老師</option>
-                </select>
-            </div>
-            <div id="reg-class-group">
-                <label class="block text-sm font-medium text-gray-700 mb-1">班別</label>
-                <input id="reg-class" type="text" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none transition" placeholder="例如：4A">
-            </div>
-            <button onclick="handleRegister()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition">註冊</button>
-            <p class="text-center text-sm text-gray-500">
-                已有帳號？<a href="#" onclick="showPage('login');return false;" class="text-indigo-600 hover:underline font-medium">返回登入</a>
-            </p>
-        </div>
-    </div>
-</div>
-
-<!-- ========== MAIN APP ========== -->
-<div id="page-app" class="hidden min-h-screen">
-    <!-- Top Navigation -->
-    <nav class="bg-indigo-600 text-white shadow-lg sticky top-0 z-20">
-        <div class="px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <button id="menu-toggle" class="lg:hidden p-1 hover:bg-indigo-500 rounded" onclick="toggleSidebar()">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                </button>
-                <span class="text-lg font-bold">🐍 Python 學習平台</span>
-            </div>
-            <div class="flex items-center gap-3">
-                <span id="nav-user" class="text-sm hidden sm:inline opacity-90"></span>
-                <button onclick="logout()" class="bg-indigo-500 hover:bg-indigo-400 px-3 py-1.5 rounded-lg text-sm transition">登出</button>
-            </div>
-        </div>
-    </nav>
-
-    <div class="flex">
-        <!-- Sidebar -->
-        <aside id="sidebar" class="w-64 bg-white shadow-md min-h-screen fixed lg:sticky lg:top-14 z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 overflow-y-auto" style="height: calc(100vh - 56px);">
-            <div class="p-4">
-                <div id="user-info" class="mb-6 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl">
-                    <p id="sidebar-name" class="font-bold text-gray-800 text-lg"></p>
-                    <p id="sidebar-role" class="text-sm text-gray-500 mt-1"></p>
-                </div>
-                <nav id="sidebar-nav" class="space-y-1"></nav>
-            </div>
-        </aside>
-
-        <!-- Sidebar overlay (mobile) -->
-        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden lg:hidden" onclick="toggleSidebar()"></div>
-
-        <!-- Main Content -->
-        <main class="flex-1 p-4 lg:p-8 w-full min-w-0">
-            <div class="max-w-5xl mx-auto">
-
-                <!-- ===== DASHBOARD ===== -->
-                <div id="view-dashboard" class="hidden fade-in">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">📊 儀表板</h2>
-                    <div id="dashboard-stats" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8"></div>
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <h3 class="text-lg font-bold text-gray-800 mb-4">📋 最近功課</h3>
-                        <div id="dashboard-recent"></div>
-                    </div>
-                </div>
-
-                <!-- ===== TEACHER: MANAGE ASSIGNMENTS ===== -->
-                <div id="view-manage-assignments" class="hidden fade-in">
-                    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
-                        <h2 class="text-2xl font-bold text-gray-800">📝 功課管理</h2>
-                        <button onclick="showCreateForm()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                            新增功課
-                        </button>
-                    </div>
-                    <!-- Create Form -->
-                    <div id="create-form" class="hidden bg-white rounded-xl shadow-md p-6 mb-6 fade-in border-l-4 border-indigo-500">
-                        <h3 class="text-lg font-bold text-gray-800 mb-4">新增功課</h3>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">功課標題 *</label>
-                                <input id="new-title" type="text" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500 transition" placeholder="例如：Python 變數練習">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">功課說明</label>
-                                <textarea id="new-desc" rows="8" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500 transition code-area text-sm" placeholder="輸入功課說明、要求和範例程式碼..."></textarea>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">截止日期</label>
-                                <input id="new-due" type="date" class="w-full max-w-xs border border-gray-300 rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500 transition">
-                            </div>
-                            <div class="flex gap-3 pt-2">
-                                <button onclick="createAssignment()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition">建立功課</button>
-                                <button onclick="hideCreateForm()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-2 rounded-lg text-sm transition">取消</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="assignments-list" class="space-y-4"></div>
-                </div>
-
-                <!-- ===== TEACHER: GRADING ===== -->
-                <div id="view-grading" class="hidden fade-in">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">✅ 批改功課</h2>
-                    <div class="bg-white rounded-xl shadow-md p-6 mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">選擇要批改的功課</label>
-                        <select id="grading-select" onchange="loadSubmissionsForGrading()" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500 transition bg-white">
-                            <option value="">-- 請選擇 --</option>
-                        </select>
-                    </div>
-                    <div id="submissions-list" class="space-y-4"></div>
-                </div>
-
-                <!-- ===== TEACHER: STUDENTS ===== -->
-                <div id="view-students" class="hidden fade-in">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">👥 學生列表</h2>
-                    <div id="students-table" class="bg-white rounded-xl shadow-md overflow-hidden"></div>
-                </div>
-
-                <!-- ===== STUDENT: MY ASSIGNMENTS ===== -->
-                <div id="view-my-assignments" class="hidden fade-in">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">📝 我的功課</h2>
-                    <div id="my-assignments-list" class="space-y-4"></div>
-                </div>
-
-                <!-- ===== STUDENT: MY GRADES ===== -->
-                <div id="view-my-grades" class="hidden fade-in">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">📈 成績查看</h2>
-                    <div id="my-grades-content"></div>
-                </div>
-
-            </div>
-        </main>
-    </div>
-</div>
-
-<!-- ========== SUBMIT MODAL (Student) ========== -->
-<div id="submit-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-full overflow-y-auto">
-        <div class="p-6">
-            <div class="flex items-center justify-between mb-4">
-                <h3 id="modal-title" class="text-xl font-bold text-gray-800"></h3>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 transition">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-            </div>
-            <div id="modal-desc" class="bg-gray-50 rounded-lg p-4 mb-4 text-sm text-gray-700 whitespace-pre-wrap max-h-48 overflow-y-auto"></div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">你的答案 / 程式碼</label>
-                <textarea id="modal-answer" rows="14" class="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500 transition code-area text-sm" placeholder="在這裡輸入你的 Python 程式碼..."></textarea>
-            </div>
-            <div class="flex justify-end gap-3 mt-4">
-                <button onclick="closeModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-2 rounded-lg text-sm transition">取消</button>
-                <button onclick="submitWork()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition">📤 提交功課</button>
-            </div>
-        </div>
-    </div>
-</div>
-
+<script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js"></script>
 <script>
 // ============================================================
 // ⚙️  請在下面貼上你的 Google Apps Script 網頁應用程式 URL
 // ============================================================
-const API_URL = 'https://script.google.com/macros/s/AKfycbxx8bv705C29rU2uH81w1qSiO7NiS-gJSUl4E_8cPWgXUs4HUe1fKeA7LOPl_aHM6FK/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbyWdHX-BJARdH_QL-gnjSWQ3FD2R49tQJFg3u2zgzxPVT3ALziqjrjZgUg9yxNcx__n/exec';
 // ============================================================
 
+// ==================== API LAYER ====================
+async function apiCall(action, data) {
+  try {
+    const payload = Object.assign({action:action}, data||{});
+    const res = await fetch(API_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      redirect:'follow',
+      body: JSON.stringify(payload)
+    });
+    const text = await res.text();
+    return JSON.parse(text);
+  } catch(err) {
+    console.error('API Error:', err);
+    return {success:false,message:'網絡錯誤，請稍後再試'};
+  }
+}
+
+function showLoading(msg){
+  var el=document.getElementById('loading-overlay');
+  if(msg){var t=el.querySelector('.loading-text');if(t)t.textContent=msg;}
+  el.classList.remove('hidden');
+}
+function hideLoading(){document.getElementById('loading-overlay').classList.add('hidden');}
+
+async function reloadData(){
+  var result = await apiCall('getAllData');
+  if(result.success){
+    var d=result.data;
+    USERS={
+      admins:d.users.filter(function(u){return u.role==='admin';}),
+      teachers:d.users.filter(function(u){return u.role==='teacher';}),
+      students:d.users.filter(function(u){return u.role==='student';})
+    };
+    QUESTIONS=d.questions;
+    ASSIGNMENTS=d.assignments;
+    RESULTS=d.results;
+    var c=d.config||{};
+    GFORM={formUrl:c.formUrl||'',entryStudentName:c.entryStudentName||'',entryStudentId:c.entryStudentId||'',entryClass:c.entryClass||'',entryAssignment:c.entryAssignment||'',entryScore:c.entryScore||'',entryTotal:c.entryTotal||'',entryPercent:c.entryPercent||'',entryDate:c.entryDate||''};
+  }
+  return result;
+}
+
+// ==================== DEFAULT DATA (for first-time seeding) ====================
+const DEFAULT_USERS=[
+  {id:'T001',username:'teacher1',password:'teacher123',name:'陳老師',role:'teacher',class:''},
+  {id:'T002',username:'teacher2',password:'teacher123',name:'李老師',role:'teacher',class:''},
+  {id:'S001',username:'student1',password:'123456',name:'陳大文',role:'student',class:'4A'},
+  {id:'S002',username:'student2',password:'123456',name:'李小明',role:'student',class:'4A'},
+  {id:'S003',username:'student3',password:'123456',name:'王美美',role:'student',class:'4A'},
+  {id:'S004',username:'student4',password:'123456',name:'張志偉',role:'student',class:'4B'},
+  {id:'S005',username:'student5',password:'123456',name:'黃嘉欣',role:'student',class:'4B'},
+  {id:'S006',username:'student6',password:'123456',name:'林家豪',role:'student',class:'4B'},
+  {id:'S007',username:'student7',password:'123456',name:'何詠琪',role:'student',class:'4C'},
+  {id:'S008',username:'student8',password:'123456',name:'劉俊傑',role:'student',class:'4C'}
+];
+
+const DEFAULT_QUESTIONS=[
+  {id:1,topicId:1,type:'mc',marks:2,question:'以下哪個函數用於在螢幕上顯示文字？',code:'',options:['input()','print()','display()','show()'],answer:1,correctOutput:'',explanation:'print() 函數用於在螢幕上輸出文字或變數的值。'},
+  {id:2,topicId:1,type:'mc',marks:2,question:'以下程式的輸出是什麼？',code:'print("Hello", "World")',options:['HelloWorld','Hello World','Hello, World','Error'],answer:1,correctOutput:'',explanation:'print() 中用逗號分隔多個值時，輸出會以空格隔開。'},
+  {id:3,topicId:1,type:'mc',marks:2,question:'input() 函數回傳的資料類型是：',code:'x = input("請輸入：")',options:['int','float','str','取決於輸入內容'],answer:2,correctOutput:'',explanation:'input() 函數永遠回傳字串 (str) 類型。'},
+  {id:4,topicId:1,type:'output',marks:3,question:'以下程式的輸出是什麼？',code:'name = "Alice"\nprint("Hello, " + name + "!")',options:[],correctOutput:'Hello, Alice!',explanation:'字串可以用 + 號連接。'},
+  {id:5,topicId:1,type:'mc',marks:2,question:'以下哪行程式碼可以正確輸出 "A B C"？',code:'',options:['print("A", "B", "C")','print("A" + "B" + "C")','print("A"; "B"; "C")','print("A" & "B" & "C")'],answer:0,correctOutput:'',explanation:'print() 中逗號分隔的參數會以空格隔開輸出。'},
+  {id:6,topicId:2,type:'mc',marks:2,question:'以下哪個是合法的 Python 變數名稱？',code:'',options:['2name','my-var','_count','class'],answer:2,correctOutput:'',explanation:'Python 變數名稱可以用字母或底線開頭。'},
+  {id:7,topicId:2,type:'mc',marks:2,question:'type(3.14) 的回傳值是：',code:'',options:["<class 'int'>","<class 'float'>","<class 'str'>","<class 'double'>"],answer:1,correctOutput:'',explanation:'3.14 是浮點數。'},
+  {id:8,topicId:2,type:'output',marks:3,question:'以下程式的輸出是什麼？',code:'x = "10"\ny = 20\nprint(int(x) + y)',options:[],correctOutput:'30',explanation:'int("10") 將字串轉為整數 10，10 + 20 = 30。'},
+  {id:9,topicId:2,type:'mc',marks:2,question:'以下哪項是布林值 (Boolean)？',code:'',options:['0','"True"','False','none'],answer:2,correctOutput:'',explanation:'Python 的布林值只有 True 和 False。'},
+  {id:10,topicId:2,type:'output',marks:3,question:'以下程式的輸出是什麼？',code:'a = 7\nb = 2\nprint(a / b)\nprint(a // b)',options:[],correctOutput:'3.5\n3',explanation:'/ 是普通除法，// 是整數除法。'},
+  {id:11,topicId:3,type:'mc',marks:2,question:'Python 中 ** 運算子的功能是：',code:'',options:['乘法','整數除法','次方（指數）','取餘數'],answer:2,correctOutput:'',explanation:'** 是次方運算子。'},
+  {id:12,topicId:3,type:'output',marks:3,question:'以下程式的輸出是什麼？',code:'x = 17\nprint(x % 5)\nprint(x // 5)',options:[],correctOutput:'2\n3',explanation:'% 取餘數，// 整數除法。'},
+  {id:13,topicId:3,type:'mc',marks:2,question:'以下哪個表達式的結果是 True？',code:'',options:['5 > 5','5 >= 5 and 3 > 4','5 == 5 or 3 > 4','not True'],answer:2,correctOutput:'',explanation:'or 運算子只需其中一個為 True 即可。'},
+  {id:14,topicId:3,type:'output',marks:3,question:'以下程式的輸出是什麼？',code:'print(2 + 3 * 4)\nprint((2 + 3) * 4)',options:[],correctOutput:'14\n20',explanation:'先乘除後加減。括號改變優先次序。'},
+  {id:15,topicId:3,type:'mc',marks:2,question:'以下程式的輸出是什麼？',code:'x = 10\nx += 5\nx *= 2\nprint(x)',options:['25','30','20','15'],answer:1,correctOutput:'',explanation:'x=10→15→30。'},
+  {id:16,topicId:4,type:'mc',marks:2,question:'Python 中 if 語句的正確語法是：',code:'',options:['if (x > 5) {print("yes")}','if x > 5: print("yes")','if x > 5 then print("yes")','IF x > 5: print("yes")'],answer:1,correctOutput:'',explanation:'Python 的 if 語句使用冒號結尾。'},
+  {id:17,topicId:4,type:'output',marks:3,question:'以下程式的輸出是什麼？',code:'score = 75\nif score >= 80:\n    print("A")\nelif score >= 60:\n    print("B")\nelse:\n    print("C")',options:[],correctOutput:'B',explanation:'score=75 滿足 >=60。'},
+  {id:18,topicId:4,type:'output',marks:3,question:'以下程式的輸出是什麼？',code:'x = 15\nif x > 10:\n    print("A")\nif x > 5:\n    print("B")\nif x > 20:\n    print("C")',options:[],correctOutput:'A\nB',explanation:'三個獨立的 if 語句分別判斷。'},
+  {id:19,topicId:5,type:'mc',marks:2,question:'range(1, 6) 產生的數字序列是：',code:'',options:['1, 2, 3, 4, 5, 6','1, 2, 3, 4, 5','0, 1, 2, 3, 4, 5','0, 1, 2, 3, 4, 5, 6'],answer:1,correctOutput:'',explanation:'range(1,6) 從 1 到 5。'},
+  {id:20,topicId:5,type:'output',marks:3,question:'以下程式的輸出是什麼？',code:'total = 0\nfor i in range(1, 4):\n    total += i\nprint(total)',options:[],correctOutput:'6',explanation:'1+2+3=6。'},
+  {id:21,topicId:5,type:'output',marks:3,question:'以下程式的輸出是什麼？',code:'for i in range(1, 6):\n    if i == 3:\n        break\n    print(i, end=" ")',options:[],correctOutput:'1 2 ',explanation:'break 在 i==3 時終止迴圈。'},
+  {id:22,topicId:6,type:'mc',marks:2,question:'以下哪個是正確的函數定義方式？',code:'',options:['function greet():','def greet():','define greet():','func greet():'],answer:1,correctOutput:'',explanation:'Python 使用 def 關鍵字。'},
+  {id:23,topicId:6,type:'output',marks:3,question:'以下程式的輸出是什麼？',code:'def add(a, b):\n    return a + b\nresult = add(3, 4)\nprint(result)',options:[],correctOutput:'7',explanation:'add(3,4) 回傳 7。'},
+  {id:24,topicId:7,type:'output',marks:3,question:'以下程式的輸出是什麼？',code:'s = "Python"\nprint(s[0])\nprint(s[-1])\nprint(s[1:4])',options:[],correctOutput:'P\nn\nyth',explanation:'s[0] 第一個字元，s[-1] 最後，s[1:4] 索引 1 到 3。'},
+  {id:25,topicId:8,type:'output',marks:3,question:'以下程式的輸出是什麼？',code:'nums = [3, 1, 4, 1, 5]\nnums.sort()\nprint(nums)\nprint(sum(nums))',options:[],correctOutput:'[1, 1, 3, 4, 5]\n14',explanation:'.sort() 升序排列，sum() 總和。'},
+  {id:26,topicId:10,type:'mc',marks:2,question:'氣泡排序的平均時間複雜度是：',code:'',options:['O(n)','O(n log n)','O(n²)','O(log n)'],answer:2,correctOutput:'',explanation:'氣泡排序 O(n²)。'}
+];
+
+const DEFAULT_ASSIGNMENTS=[
+  {id:'A001',name:'練習一：基本概念',topicIds:[1,2],questionIds:[1,2,3,4,6,7,8,9],dueDate:'2026-04-30',createdAt:'2026-04-01',assignedStudents:['all']},
+  {id:'A002',name:'練習二：運算子與條件',topicIds:[3,4],questionIds:[11,12,13,14,16,17,18],dueDate:'2026-05-15',createdAt:'2026-04-10',assignedStudents:['S001','S002','S003','S004','S005']}
+];
+
+async function seedDefaultData(){
+  showLoading('正在初始化預設資料...');
+  await apiCall('seedData',{type:'users',users:DEFAULT_USERS});
+  await apiCall('seedData',{type:'questions',questions:DEFAULT_QUESTIONS});
+  await apiCall('seedData',{type:'assignments',assignments:DEFAULT_ASSIGNMENTS});
+  await reloadData();
+  hideLoading();
+}
+
 // ==================== STATE ====================
-let currentUser = null;
-let cachedAssignments = [];
-let cachedMySubmissions = {};
-let currentModalAssignmentId = null;
-let confirmResolve = null;
+const STATE={currentUser:null,view:'login',sidebarOpen:false,currentTopic:null,currentQuiz:null,quizAnswers:{},quizSubmitted:false,managementTab:'results',accountTab:'students',selectedResult:null,filterClass:'all',filterAssignment:'all',previewMode:false,previewStudentId:null,searchQuery:'',teacherSearchQuery:'',assignModalSearch:'',assignModalClass:'all',assignModalSelected:[]};
 
-// ==================== API ====================
-async function api(action, data) {
-    data = data || {};
-    try {
-        const res = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            redirect: 'follow',
-            body: JSON.stringify(Object.assign({ action: action }, data))
-        });
-        return await res.json();
-    } catch (err) {
-        console.error('API Error:', err);
-        return { success: false, message: '網絡錯誤，請稍後再試' };
-    }
+let USERS={admins:[],teachers:[],students:[]};
+let QUESTIONS=[];
+let ASSIGNMENTS=[];
+let RESULTS=[];
+let GFORM={formUrl:'',entryStudentName:'',entryStudentId:'',entryClass:'',entryAssignment:'',entryScore:'',entryTotal:'',entryPercent:'',entryDate:''};
+
+const TOPICS=[
+  {id:1,name:'基本輸入輸出',icon:'fa-terminal',color:'#4361ee',desc:'print()、input() 函數的使用'},
+  {id:2,name:'變數與資料類型',icon:'fa-box',color:'#7209b7',desc:'int, float, str, bool 及類型轉換'},
+  {id:3,name:'運算子',icon:'fa-calculator',color:'#f72585',desc:'算術、比較、邏輯及賦值運算子'},
+  {id:4,name:'條件判斷',icon:'fa-code-branch',color:'#4cc9f0',desc:'if、elif、else 條件語句'},
+  {id:5,name:'迴圈',icon:'fa-sync-alt',color:'#06d6a0',desc:'for 迴圈、while 迴圈、break、continue'},
+  {id:6,name:'函數',icon:'fa-cube',color:'#ffd166',desc:'函數定義、參數、回傳值'},
+  {id:7,name:'字串處理',icon:'fa-font',color:'#ef476f',desc:'字串索引、切片、常用方法'},
+  {id:8,name:'串列 (List)',icon:'fa-list-ol',color:'#118ab2',desc:'串列操作、方法、二維串列'},
+  {id:9,name:'檔案處理',icon:'fa-file-alt',color:'#073b4c',desc:'檔案讀寫、open()、with 語句'},
+  {id:10,name:'演算法',icon:'fa-project-diagram',color:'#e63946',desc:'排序、搜尋演算法'}
+];
+
+// ==================== UTILS ====================
+function toast(msg,type){type=type||'info';var c=document.getElementById('toast-container');var t=document.createElement('div');t.className='toast toast-'+type;t.textContent=msg;c.appendChild(t);setTimeout(function(){t.remove();},3000);}
+function getScoreClass(p){return p>=70?'high':p>=40?'mid':'low';}
+function getScoreColorClass(p){return p>=70?'score-high':p>=40?'score-mid':'score-low';}
+function formatDate(){return new Date().toISOString().split('T')[0];}
+function escapeHtml(s){if(s===undefined||s===null)return '';var d=document.createElement('div');d.textContent=String(s);return d.innerHTML;}
+function questionsByTopic(tid){return QUESTIONS.filter(function(q){return q.topicId===tid;});}
+function questionById(id){return QUESTIONS.find(function(q){return q.id===id;});}
+function getStudentResults(sid){return RESULTS.filter(function(r){return r.studentId===sid;});}
+function nextQuestionId(){return QUESTIONS.length>0?Math.max.apply(null,QUESTIONS.map(function(q){return q.id;}))+1:1;}
+function nextAssignmentId(){return 'A'+String(ASSIGNMENTS.length+1).padStart(3,'0');}
+function normalizeOutput(s){if(s===undefined||s===null)return '';return String(s).replace(/\r\n/g,'\n').replace(/\r/g,'\n').trim();}
+function generatePassword(len){len=len||8;var chars='abcdefghjkmnpqrstuvwxyz23456789';var p='';for(var i=0;i<len;i++)p+=chars[Math.floor(Math.random()*chars.length)];return p;}
+function isAdmin(){return STATE.currentUser&&STATE.currentUser.role==='admin';}
+function isManagement(){return STATE.currentUser&&(STATE.currentUser.role==='admin'||STATE.currentUser.role==='teacher');}
+function getEffectiveUser(){if(STATE.previewMode&&STATE.previewStudentId){var s=USERS.students.find(function(s){return s.id===STATE.previewStudentId;});if(s)return Object.assign({},s,{role:'student'});}return STATE.currentUser;}
+function isPreviewMode(){return STATE.currentUser&&isManagement()&&STATE.previewMode;}
+function copyToClipboard(text){try{navigator.clipboard.writeText(text);toast('已複製','success');}catch(e){var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('已複製','success');}}
+function getAllClasses(){return Array.from(new Set(USERS.students.map(function(s){return s.class;}))).sort();}
+function isAssignedToStudent(a,sid){if(!a.assignedStudents||a.assignedStudents.length===0)return true;if(a.assignedStudents.includes('all'))return true;return a.assignedStudents.includes(sid);}
+function getAssignedCount(a){if(!a.assignedStudents||a.assignedStudents.includes('all'))return USERS.students.length;return a.assignedStudents.filter(function(sid){return USERS.students.find(function(s){return s.id===sid;});}).length;}
+function getAssignedLabel(a){if(!a.assignedStudents||a.assignedStudents.includes('all'))return '全部學生';return getAssignedCount(a)+' 位學生';}
+function getStudentAssignments(sid){return ASSIGNMENTS.filter(function(a){return isAssignedToStudent(a,sid);});}
+
+let _pendingAction=null;
+function confirmDialog(title,msg,onConfirm){_pendingAction=onConfirm;showModal('<h3 style="display:flex;align-items:center;gap:10px;"><i class="fas fa-exclamation-triangle" style="color:var(--warn);font-size:22px;"></i> '+escapeHtml(title)+'</h3><p style="margin:16px 0;line-height:1.7;font-size:14px;white-space:pre-wrap;">'+escapeHtml(msg)+'</p><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-danger" onclick="closeModal();if(_pendingAction)_pendingAction();">確認</button></div>');}
+
+// ==================== MODAL ====================
+function showModal(content){var o=document.createElement('div');o.className='modal-overlay';o.id='modal-overlay';o.innerHTML='<div class="modal">'+content+'</div>';o.addEventListener('click',function(e){if(e.target===o)closeModal();});document.body.appendChild(o);}
+function closeModal(){var el=document.getElementById('modal-overlay');if(el)el.remove();}
+
+// ==================== STUDENT PICKER ====================
+let _pickerState={};
+function initPickerState(pid,sel){_pickerState[pid]={selected:sel?sel.slice():['all'],filterClass:'all',search:''};}
+function buildStudentPickerHTML(pid,selIds,fc,st){
+  var classes=getAllClasses();var isAll=selIds.includes('all');var students=USERS.students.slice();
+  if(fc&&fc!=='all')students=students.filter(function(s){return s.class===fc;});
+  if(st){var q=st.toLowerCase();students=students.filter(function(s){return s.name.toLowerCase().includes(q)||s.id.toLowerCase().includes(q);});}
+  var cc=isAll?USERS.students.length:selIds.filter(function(sid){return USERS.students.find(function(s){return s.id===sid;});}).length;
+  var h='<div class="student-picker" id="'+pid+'"><div class="student-picker-header"><input type="text" placeholder="🔍 搜尋學生..." value="'+escapeHtml(st||'')+'" oninput="onPickerSearch(\''+pid+'\',this.value)"><select onchange="onPickerClassFilter(\''+pid+'\',this.value)"><option value="all">所有班別</option>'+classes.map(function(c){return '<option value="'+c+'" '+(fc===c?'selected':'')+'>'+c+'</option>';}).join('')+'</select></div><div class="student-picker-actions"><button class="btn btn-sm '+(isAll?'btn-pri':'btn-outline')+'" onclick="onPickerSelectAll(\''+pid+'\')" style="font-size:11px;padding:4px 10px;"><i class="fas fa-check-double"></i> 全部</button><button class="btn btn-outline btn-sm" onclick="onPickerSelectClass(\''+pid+'\')" style="font-size:11px;padding:4px 10px;"><i class="fas fa-users"></i> 選班別</button><button class="btn btn-outline btn-sm" onclick="onPickerDeselectAll(\''+pid+'\')" style="font-size:11px;padding:4px 10px;"><i class="fas fa-times"></i> 清除</button><span class="pick-info"><i class="fas fa-user-check"></i> 已選 <strong>'+cc+'</strong> / '+USERS.students.length+'</span></div><div class="student-picker-list">';
+  if(students.length===0){h+='<div class="student-picker-empty"><i class="fas fa-search"></i> 無結果</div>';}else{students.forEach(function(s){var ck=isAll||selIds.includes(s.id);h+='<label class="student-pick-item '+(ck?'checked':'')+'" onclick="event.preventDefault();onPickerToggle(\''+pid+'\',\''+s.id+'\')"><input type="checkbox" '+(ck?'checked':'')+' onclick="event.stopPropagation();" onchange="onPickerToggle(\''+pid+'\',\''+s.id+'\')"><span class="pick-name">'+escapeHtml(s.name)+'</span><span class="pick-id">'+s.id+'</span><span class="pick-class">'+s.class+'</span></label>';});}
+  h+='</div></div>';
+  if(isAll){h+='<div class="selected-summary" style="margin-top:8px;"><span class="selected-chip" style="background:rgba(6,214,160,.1);color:#05a67c;"><i class="fas fa-globe" style="font-size:10px;"></i> 全部學生 ('+USERS.students.length+')</span></div>';}
+  else if(cc>0){h+='<div class="selected-summary" style="margin-top:8px;">';var grouped={};selIds.forEach(function(sid){var st=USERS.students.find(function(s){return s.id===sid;});if(st){if(!grouped[st.class])grouped[st.class]=[];grouped[st.class].push(st);}});Object.keys(grouped).sort().forEach(function(cls){h+='<span class="selected-chip"><strong>'+cls+'</strong>：'+grouped[cls].map(function(s){return s.name;}).join('、')+' <span class="chip-remove" onclick="onPickerRemoveClass(\''+pid+'\',\''+cls+'\')">✕</span></span>';});h+='</div>';}
+  return h;
+}
+function onPickerSearch(pid,v){_pickerState[pid].search=v;refreshPicker(pid);}
+function onPickerClassFilter(pid,v){_pickerState[pid].filterClass=v;refreshPicker(pid);}
+function onPickerSelectAll(pid){_pickerState[pid].selected=['all'];refreshPicker(pid);}
+function onPickerSelectClass(pid){var ps=_pickerState[pid];if(ps.filterClass==='all'){ps.selected=['all'];}else{if(ps.selected.includes('all'))ps.selected=USERS.students.map(function(s){return s.id;});USERS.students.filter(function(s){return s.class===ps.filterClass;}).forEach(function(s){if(!ps.selected.includes(s.id))ps.selected.push(s.id);});}refreshPicker(pid);}
+function onPickerDeselectAll(pid){_pickerState[pid].selected=[];refreshPicker(pid);}
+function onPickerToggle(pid,sid){var ps=_pickerState[pid];if(ps.selected.includes('all')){ps.selected=USERS.students.map(function(s){return s.id;}).filter(function(id){return id!==sid;});}else{var idx=ps.selected.indexOf(sid);if(idx>=0)ps.selected.splice(idx,1);else ps.selected.push(sid);}if(ps.selected.length===USERS.students.length&&!ps.selected.includes('all')){if(USERS.students.every(function(s){return ps.selected.includes(s.id);}))ps.selected=['all'];}refreshPicker(pid);}
+function onPickerRemoveClass(pid,cls){var ps=_pickerState[pid];if(ps.selected.includes('all')){ps.selected=USERS.students.filter(function(s){return s.class!==cls;}).map(function(s){return s.id;});}else{var rem=USERS.students.filter(function(s){return s.class===cls;}).map(function(s){return s.id;});ps.selected=ps.selected.filter(function(id){return!rem.includes(id);});}refreshPicker(pid);}
+function refreshPicker(pid){var ps=_pickerState[pid];var el=document.getElementById(pid);if(!el)return;var w=el.parentElement;if(!w)return;w.innerHTML=buildStudentPickerHTML(pid,ps.selected,ps.filterClass,ps.search);}
+
+// ==================== RENDER ====================
+function render(){var app=document.getElementById('app');if(!STATE.currentUser)app.innerHTML=renderLogin();else if(isManagement()&&STATE.previewMode)app.innerHTML=renderPreviewBar()+renderStudentLayout();else if(isManagement())app.innerHTML=renderManagementLayout();else app.innerHTML=renderStudentLayout();postRender();}
+
+function renderLogin(){
+  return '<div class="login-page"><div class="login-box"><div class="logo"><i class="fas fa-laptop-code"></i></div><h1>DSE ICT Python 學習系統</h1><p class="subtitle">香港中學文憑試 資訊及通訊科技科</p><div class="form-group"><label>身份</label><select id="login-role"><option value="student">學生</option><option value="teacher">老師</option><option value="admin">管理員</option></select></div><div class="form-group"><label>用戶名稱</label><input id="login-user" type="text" placeholder="請輸入用戶名稱"></div><div class="form-group"><label>密碼</label><input id="login-pass" type="password" placeholder="請輸入密碼"></div><button class="btn btn-pri btn-full" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> 登入</button><div class="form-group hint" style="margin-top:12px;text-align:center;font-size:12px;color:#999;">管理員 admin/admin123 ｜ 老師 teacher1/teacher123 ｜ 學生 student1/123456</div></div></div>';
 }
 
-// ==================== UI HELPERS ====================
-function showToast(msg, type) {
-    type = type || 'success';
-    var toast = document.getElementById('toast');
-    var inner = toast.querySelector('div');
-    inner.textContent = msg;
-    inner.className = 'px-6 py-3 rounded-lg shadow-lg text-white text-sm font-medium ' +
-        (type === 'error' ? 'bg-red-500' : type === 'info' ? 'bg-blue-500' : 'bg-green-500');
-    toast.classList.remove('hidden');
-    clearTimeout(toast._timer);
-    toast._timer = setTimeout(function() { toast.classList.add('hidden'); }, 3500);
+function renderPreviewBar(){var pu=getEffectiveUser();return '<div class="preview-bar"><div class="preview-label"><i class="fas fa-eye"></i><span>學生檢視模式 — '+escapeHtml(pu?.name||'')+' ('+escapeHtml(pu?.class||'')+')</span></div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;"><select onchange="switchPreviewStudent(this.value)">'+USERS.students.map(function(s){return '<option value="'+s.id+'" '+(STATE.previewStudentId===s.id?'selected':'')+'>'+s.name+' ('+s.class+')</option>';}).join('')+'</select><button class="btn-back" onclick="exitPreview()"><i class="fas fa-arrow-left"></i> 返回</button></div></div>';}
+
+function renderStudentLayout(){
+  var u=getEffectiveUser();var ip=isPreviewMode();
+  var fn=({
+    'student-dashboard':renderStudentDashboard,'topic-questions':renderTopicQuestions,
+    'quiz':renderQuiz,'quiz-result':renderQuizResult,'coding':renderCoding,
+    'student-assignments':renderStudentAssignments,'student-history':renderStudentHistory
+  })[STATE.view]||renderStudentDashboard;
+  var viewTitle={'student-dashboard':'主頁','topic-questions':'課題練習','quiz':'測驗','quiz-result':'測驗結果','coding':'Python 編程練習','student-assignments':'功課','student-history':'歷史紀錄'}[STATE.view]||'主頁';
+  return '<div class="layout '+(ip?'preview-mode':'')+'"><nav class="sidebar '+(STATE.sidebarOpen?'open':'')+'" id="sidebar"><div class="sidebar-header"><h2><i class="fas fa-laptop-code"></i> DSE Python</h2><small>'+escapeHtml(u.name)+' ('+escapeHtml(u.class)+')</small>'+(ip?'<div style="margin-top:6px;"><span class="role-badge role-admin">👁 檢視模式</span></div>':'')+'</div><div class="sidebar-nav"><div class="nav-item '+(STATE.view==='student-dashboard'?'active':'')+'" onclick="navigate(\'student-dashboard\')"><i class="fas fa-home"></i> 主頁</div><div class="nav-item '+(STATE.view==='student-assignments'?'active':'')+'" onclick="navigate(\'student-assignments\')"><i class="fas fa-tasks"></i> 功課</div><div class="nav-item '+(STATE.view==='coding'?'active':'')+'" onclick="navigate(\'coding\')"><i class="fas fa-code"></i> Python 練習</div><div class="nav-item '+(STATE.view==='student-history'?'active':'')+'" onclick="navigate(\'student-history\')"><i class="fas fa-history"></i> 歷史紀錄</div>'+(ip?'<div style="border-top:1px solid rgba(255,255,255,.1);margin-top:8px;padding-top:8px;"></div><div class="nav-item preview-switch" onclick="exitPreview()"><i class="fas fa-arrow-left"></i> 返回管理</div>':'')+'</div>'+(!ip?'<div class="sidebar-footer"><div class="nav-item" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> 登出</div></div>':'')+'</nav><div class="main-content"><div class="topbar"><div style="display:flex;align-items:center;gap:12px;"><button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button><h2>'+viewTitle+'</h2></div><div class="topbar-right"><div class="user-badge '+(ip?'preview':'')+'"><i class="fas '+(ip?'fa-eye':'fa-user-graduate')+'"></i> '+escapeHtml(u.name)+'</div></div></div><div class="content-area">'+fn()+'</div></div></div>';
 }
 
-function showLoading() { document.getElementById('loading').classList.remove('hidden'); }
-function hideLoading() { document.getElementById('loading').classList.add('hidden'); }
-
-function showPage(name) {
-    ['page-login','page-register','page-app'].forEach(function(id) {
-        document.getElementById(id).classList.add('hidden');
-    });
-    document.getElementById('page-' + name).classList.remove('hidden');
+function renderStudentDashboard(){
+  var u=getEffectiveUser();var myR=getStudentResults(u.id);var myA=getStudentAssignments(u.id);
+  var total=myR.length;var avg=total>0?Math.round(myR.reduce(function(s,r){return s+r.percentage;},0)/total):0;
+  var pending=myA.filter(function(a){return!myR.find(function(r){return r.assignmentId===a.id;});});
+  var html='<div class="stats-grid"><div class="stat-card"><div class="stat-icon blue"><i class="fas fa-book"></i></div><div><h4>'+TOPICS.length+'</h4><p>學習課題</p></div></div><div class="stat-card"><div class="stat-icon green"><i class="fas fa-check-circle"></i></div><div><h4>'+total+'</h4><p>已完成測驗</p></div></div><div class="stat-card"><div class="stat-icon purple"><i class="fas fa-chart-line"></i></div><div><h4>'+avg+'%</h4><p>平均分數</p></div></div><div class="stat-card"><div class="stat-icon orange"><i class="fas fa-clipboard-list"></i></div><div><h4>'+pending.length+'</h4><p>待完成功課</p></div></div></div>';
+  if(pending.length>0){html+='<div class="card"><h3><i class="fas fa-exclamation-circle" style="color:var(--warn)"></i> 待完成功課</h3>';pending.forEach(function(a){html+='<div class="assign-card"><div class="assign-info"><h4>'+escapeHtml(a.name)+'</h4><p>'+a.questionIds.length+' 題 ｜ 截止：'+a.dueDate+'</p></div><button class="btn btn-pri btn-sm" onclick="startAssignment(\''+a.id+'\')"><i class="fas fa-play"></i> 開始</button></div>';});html+='</div>';}
+  html+='<div class="card"><h3><i class="fas fa-book-open"></i> 課題練習</h3><div class="topic-grid">';
+  TOPICS.forEach(function(t){var qc=questionsByTopic(t.id).length;html+='<div class="topic-card" onclick="openTopic('+t.id+')" style="border-left-color:'+t.color+'"><h4><i class="fas '+t.icon+'" style="color:'+t.color+'"></i> '+t.name+'</h4><p>'+t.desc+'</p><span class="badge badge-blue">'+qc+' 題</span></div>';});
+  html+='</div></div>';return html;
 }
 
-function showView(name) {
-    var views = document.querySelectorAll('[id^="view-"]');
-    for (var i = 0; i < views.length; i++) { views[i].classList.add('hidden'); }
-    var el = document.getElementById('view-' + name);
-    if (el) { el.classList.remove('hidden'); }
-    var items = document.querySelectorAll('.sidebar-item');
-    for (var j = 0; j < items.length; j++) {
-        items[j].classList.toggle('active', items[j].dataset.view === name);
-    }
+function renderStudentAssignments(){
+  var u=getEffectiveUser();var myR=getStudentResults(u.id);var myA=getStudentAssignments(u.id);
+  var html='<div class="card"><h3><i class="fas fa-tasks"></i> 功課列表</h3>';
+  if(myA.length===0)html+='<p style="color:var(--text-light);padding:20px 0;">暫無功課</p>';
+  myA.forEach(function(a){var done=myR.find(function(r){return r.assignmentId===a.id;});
+    html+='<div class="assign-card"><div class="assign-info"><h4>'+escapeHtml(a.name)+'</h4><p>'+a.questionIds.length+' 題</p><div class="assign-meta"><span><i class="fas fa-calendar"></i> 截止：'+a.dueDate+'</span>'+(done?'<span class="'+getScoreColorClass(done.percentage)+'"><i class="fas fa-star"></i> '+done.score+'/'+done.total+' ('+done.percentage+'%)</span>':'<span style="color:var(--warn)"><i class="fas fa-clock"></i> 未完成</span>')+'</div></div>'+(done?'<button class="btn btn-outline btn-sm" onclick="viewResult(\''+done.id+'\')"><i class="fas fa-eye"></i> 查看</button>':'<button class="btn btn-pri btn-sm" onclick="startAssignment(\''+a.id+'\')"><i class="fas fa-play"></i> 開始</button>')+'</div>';});
+  html+='</div>';return html;
 }
 
-function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('-translate-x-full');
-    document.getElementById('sidebar-overlay').classList.toggle('hidden');
+function renderStudentHistory(){
+  var u=getEffectiveUser();var myR=getStudentResults(u.id).slice().reverse();
+  var html='<div class="card"><h3><i class="fas fa-history"></i> 測驗紀錄</h3>';
+  if(myR.length===0)html+='<p style="color:var(--text-light);padding:20px 0;">暫無紀錄</p>';
+  else{html+='<div class="table-wrap"><table><thead><tr><th>日期</th><th>名稱</th><th>分數</th><th>百分比</th><th>操作</th></tr></thead><tbody>';myR.forEach(function(r){var name=r.assignmentId?(ASSIGNMENTS.find(function(a){return a.id===r.assignmentId;})||{}).name||r.assignmentId:TOPICS.find(function(t){return t.id===r.topicId;})?.name||'未知';html+='<tr><td>'+r.date+'</td><td>'+escapeHtml(name)+(r.isPreview?' <span style="color:#f72585;font-size:11px;">（預覽）</span>':'')+'</td><td>'+r.score+'/'+r.total+'</td><td class="'+getScoreColorClass(r.percentage)+'">'+r.percentage+'%</td><td><button class="btn btn-outline btn-sm" onclick="viewResult(\''+r.id+'\')"><i class="fas fa-eye"></i></button></td></tr>';});html+='</tbody></table></div>';}
+  html+='</div>';return html;
 }
 
-function toggleClassField() {
-    var role = document.getElementById('reg-role').value;
-    document.getElementById('reg-class-group').style.display = role === 'student' ? 'block' : 'none';
+function renderTopicQuestions(){
+  var t=TOPICS.find(function(t){return t.id===STATE.currentTopic;});if(!t)return '<p>找不到課題</p>';var qs=questionsByTopic(t.id);
+  return '<div style="margin-bottom:16px;"><button class="btn btn-outline btn-sm" onclick="navigate(\'student-dashboard\')"><i class="fas fa-arrow-left"></i> 返回</button></div><div class="card"><h3 style="color:'+t.color+'"><i class="fas '+t.icon+'"></i> '+t.name+'</h3><p style="color:var(--text-light);margin-bottom:16px">'+t.desc+' — 共 '+qs.length+' 題</p><button class="btn btn-pri" onclick="startTopicQuiz('+t.id+')"><i class="fas fa-play"></i> 開始練習</button></div>';
 }
 
-function escapeHtml(str) {
-    if (str === null || str === undefined) return '';
-    var div = document.createElement('div');
-    div.textContent = String(str);
-    return div.innerHTML;
+function renderQuiz(){
+  var quiz=STATE.currentQuiz;if(!quiz)return '<p>無測驗資料</p>';var qs=quiz.questions;var total=qs.length;var answered=Object.keys(STATE.quizAnswers).length;var progress=STATE.quizSubmitted?100:Math.round(answered/total*100);
+  var html='<div class="quiz-container"><div class="quiz-header"><h3>'+escapeHtml(quiz.name)+'</h3><span style="font-size:14px;color:var(--text-light)">'+answered+'/'+total+' 已作答</span></div><div class="quiz-progress"><div class="quiz-progress-bar" style="width:'+progress+'%"></div></div>';
+  qs.forEach(function(q,idx){var ua=STATE.quizAnswers[q.id];html+='<div class="question-card" id="q-'+q.id+'"><span class="question-num">第 '+(idx+1)+' 題（'+q.marks+' 分）</span><div class="question-text">'+escapeHtml(q.question)+'</div>';if(q.code)html+='<div class="code-block">'+escapeHtml(q.code)+'</div>';
+    if(q.type==='mc'){html+='<div class="options">';var letters='ABCD';q.options.forEach(function(opt,oi){var cls='';if(STATE.quizSubmitted){if(oi===q.answer)cls='correct';else if(ua!==undefined&&ua===oi)cls='wrong';}else if(ua===oi)cls='selected';html+='<div class="option '+cls+'" onclick="'+(STATE.quizSubmitted?'':'selectAnswer('+q.id+','+oi+')')+'"><span class="option-letter">'+letters[oi]+'</span><span>'+escapeHtml(opt)+'</span></div>';});html+='</div>';}
+    else if(q.type==='output'){html+='<div class="form-group" style="margin-top:8px;"><label>請輸入程式的輸出結果：</label><textarea class="answer-input" rows="3" id="ans-'+q.id+'" '+(STATE.quizSubmitted?'disabled':'')+' oninput="textAnswer('+q.id+',this.value)" placeholder="在此輸入...">'+(ua!==undefined?escapeHtml(ua):'')+'</textarea></div>';if(STATE.quizSubmitted){var ok=normalizeOutput(ua)===normalizeOutput(q.correctOutput);html+='<div style="margin-top:8px;"><span style="color:'+(ok?'var(--success)':'var(--danger)')+';font-weight:600">'+(ok?'✓ 正確':'✗ 錯誤')+'</span><div class="code-block">'+escapeHtml(q.correctOutput)+'</div></div>';}}
+    if(STATE.quizSubmitted&&q.explanation)html+='<div class="explanation"><strong>解釋：</strong>'+escapeHtml(q.explanation)+'</div>';html+='</div>';});
+  if(!STATE.quizSubmitted)html+='<div style="text-align:center;padding:20px 0;"><button class="btn btn-pri" onclick="submitQuiz()" style="padding:14px 40px;font-size:16px;"><i class="fas fa-paper-plane"></i> 提交答案</button></div>';
+  else{html+=renderQuizResultSummary();html+='<div style="text-align:center;padding:20px 0;"><button class="btn btn-pri" onclick="navigate(\'student-dashboard\')"><i class="fas fa-home"></i> 返回主頁</button></div>';}
+  html+='</div>';return html;
 }
 
-function formatDate(d) {
-    if (!d) return '-';
-    try {
-        var date = new Date(d);
-        if (isNaN(date.getTime())) return String(d);
-        return date.getFullYear() + '/' + (date.getMonth()+1) + '/' + date.getDate();
-    } catch(e) { return String(d); }
+function renderQuizResultSummary(){
+  var quiz=STATE.currentQuiz;var qs=quiz.questions;var score=0,total=0;qs.forEach(function(q){total+=q.marks;if(q.type==='mc'&&STATE.quizAnswers[q.id]===q.answer)score+=q.marks;else if(q.type==='output'&&normalizeOutput(STATE.quizAnswers[q.id])===normalizeOutput(q.correctOutput))score+=q.marks;});
+  var pct=total>0?Math.round(score/total*100):0;var cls=getScoreClass(pct);
+  return '<div class="card" style="text-align:center;"><div class="result-circle '+cls+'"><i class="fas '+(pct>=70?'fa-trophy':pct>=40?'fa-medal':'fa-redo')+'"></i></div><div class="result-score '+cls+'">'+pct+'%</div><p style="font-size:18px;margin-bottom:8px;">得分：'+score+' / '+total+'</p></div>';
 }
 
-function hasScore(s) {
-    return s.score !== '' && s.score !== null && s.score !== undefined;
+function renderQuizResult(){var r=RESULTS.find(function(r){return r.id===STATE.selectedResult;});if(!r)return '<p>找不到紀錄</p>';STATE.currentQuiz={name:r.quizName,questions:r.questions};STATE.quizAnswers=r.answers;STATE.quizSubmitted=true;return '<div style="margin-bottom:16px;"><button class="btn btn-outline btn-sm" onclick="navigate(\'student-history\')"><i class="fas fa-arrow-left"></i> 返回</button></div>'+renderQuiz();}
+
+function renderCoding(){
+  return '<div class="card"><h3><i class="fas fa-code"></i> Python 編程練習場</h3><div class="form-group"><label>輸入值（每行一個）：</label><textarea id="code-inputs" class="answer-input" rows="2" placeholder="每行一個輸入值"></textarea></div><div class="code-editor-wrapper"><textarea id="code-editor" class="code-editor" rows="14" spellcheck="false">print("Hello, World!")\n\nfor i in range(1, 6):\n    print(f"{i} x {i} = {i*i}")</textarea></div><div style="margin-top:12px;display:flex;gap:8px;"><button class="btn btn-success" onclick="runCode()"><i class="fas fa-play"></i> 執行</button><button class="btn btn-outline" onclick="clearCode()"><i class="fas fa-eraser"></i> 清除</button></div><div style="margin-top:16px;"><label style="font-weight:600;">輸出：</label><div id="code-output" class="code-output">等待執行...</div></div></div>';
 }
 
-// Custom confirm dialog
-function customConfirm(msg) {
-    return new Promise(function(resolve) {
-        document.getElementById('confirm-message').textContent = msg;
-        document.getElementById('confirm-modal').classList.remove('hidden');
-        confirmResolve = resolve;
-    });
-}
-function confirmOk() {
-    document.getElementById('confirm-modal').classList.add('hidden');
-    if (confirmResolve) confirmResolve(true);
-    confirmResolve = null;
-}
-function confirmCancel() {
-    document.getElementById('confirm-modal').classList.add('hidden');
-    if (confirmResolve) confirmResolve(false);
-    confirmResolve = null;
+// ==================== MANAGEMENT LAYOUT ====================
+function renderManagementLayout(){
+  var u=STATE.currentUser;var ia=isAdmin();
+  var tabs=[{id:'results',icon:'fa-chart-bar',label:'學生成績'},{id:'assignments',icon:'fa-tasks',label:'功課管理'},{id:'questions',icon:'fa-question-circle',label:'題庫管理'},{id:'accounts',icon:'fa-users-cog',label:'賬戶管理'},{id:'gform',icon:'fa-file-export',label:'Google Form'}];
+  var fn=({results:renderMgResults,assignments:renderMgAssignments,questions:renderMgQuestions,accounts:renderAccountManagement,gform:renderMgGForm})[STATE.managementTab]||renderMgResults;
+  var roleLabel=ia?'系統管理員':'教師';var roleClass=ia?'role-admin':'role-teacher';
+  return '<div class="layout"><nav class="sidebar '+(STATE.sidebarOpen?'open':'')+'" id="sidebar"><div class="sidebar-header"><h2><i class="fas '+(ia?'fa-shield-alt':'fa-chalkboard-teacher')+'"></i> DSE Python</h2><small>'+escapeHtml(u.name)+'</small><div style="margin-top:6px;"><span class="role-badge '+roleClass+'">'+roleLabel+'</span></div></div><div class="sidebar-nav"><div class="nav-section">教學管理</div>'+tabs.slice(0,3).map(function(t){return '<div class="nav-item '+(STATE.managementTab===t.id?'active':'')+'" onclick="STATE.managementTab=\''+t.id+'\';STATE.sidebarOpen=false;render()"><i class="fas '+t.icon+'"></i> '+t.label+'</div>';}).join('')+'<div class="nav-section">系統</div>'+tabs.slice(3).map(function(t){return '<div class="nav-item '+(STATE.managementTab===t.id?'active':'')+'" onclick="STATE.managementTab=\''+t.id+'\';STATE.sidebarOpen=false;render()"><i class="fas '+t.icon+'"></i> '+t.label+'</div>';}).join('')+'<div style="border-top:1px solid rgba(255,255,255,.1);margin-top:8px;padding-top:8px;"></div><div class="nav-item preview-switch" onclick="enterPreview()"><i class="fas fa-eye"></i> 學生檢視</div></div><div class="sidebar-footer"><div class="nav-item" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> 登出</div></div></nav><div class="main-content"><div class="topbar"><div style="display:flex;align-items:center;gap:12px;"><button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button><h2>'+(tabs.find(function(t){return t.id===STATE.managementTab;})?.label||'管理')+'</h2></div><div class="topbar-right"><button class="btn btn-sm" style="background:linear-gradient(90deg,#f72585,#7209b7);color:#fff;" onclick="enterPreview()"><i class="fas fa-eye"></i> 學生檢視</button><div class="user-badge"><i class="fas '+(ia?'fa-shield-alt':'fa-user-tie')+'"></i> '+escapeHtml(u.name)+'</div></div></div><div class="content-area">'+fn()+'</div></div></div>';
 }
 
-// ==================== AUTH ====================
-async function handleLogin() {
-    var username = document.getElementById('login-username').value.trim();
-    var password = document.getElementById('login-password').value.trim();
-    if (!username || !password) { showToast('請輸入帳號和密碼', 'error'); return; }
-
-    showLoading();
-    var result = await api('login', { username: username, password: password });
-    hideLoading();
-
-    if (result.success) {
-        currentUser = result.user;
-        showToast('歡迎回來，' + currentUser.name + '！');
-        initApp();
-    } else {
-        showToast(result.message || '登入失敗', 'error');
-    }
+function renderMgResults(){
+  var classes=getAllClasses();
+  var html='<div class="stats-grid"><div class="stat-card"><div class="stat-icon blue"><i class="fas fa-users"></i></div><div><h4>'+USERS.students.length+'</h4><p>學生人數</p></div></div><div class="stat-card"><div class="stat-icon green"><i class="fas fa-file-alt"></i></div><div><h4>'+RESULTS.filter(function(r){return!r.isPreview;}).length+'</h4><p>提交紀錄</p></div></div><div class="stat-card"><div class="stat-icon purple"><i class="fas fa-tasks"></i></div><div><h4>'+ASSIGNMENTS.length+'</h4><p>功課數量</p></div></div><div class="stat-card"><div class="stat-icon orange"><i class="fas fa-question-circle"></i></div><div><h4>'+QUESTIONS.length+'</h4><p>題目數量</p></div></div></div>';
+  html+='<div class="card"><h3><i class="fas fa-chart-bar"></i> 學生成績</h3><div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;"><div class="form-group" style="margin:0;flex:1;min-width:120px;"><select onchange="STATE.filterClass=this.value;render()"><option value="all">所有班別</option>'+classes.map(function(c){return '<option value="'+c+'" '+(STATE.filterClass===c?'selected':'')+'>'+c+'</option>';}).join('')+'</select></div><div class="form-group" style="margin:0;flex:1;min-width:120px;"><select onchange="STATE.filterAssignment=this.value;render()"><option value="all">所有功課</option>'+ASSIGNMENTS.map(function(a){return '<option value="'+a.id+'" '+(STATE.filterAssignment===a.id?'selected':'')+'>'+a.name+'</option>';}).join('')+'</select></div><button class="btn btn-success btn-sm" onclick="exportCSV()"><i class="fas fa-download"></i> 匯出 CSV</button></div>';
+  var filtered=USERS.students.slice();if(STATE.filterClass!=='all')filtered=filtered.filter(function(s){return s.class===STATE.filterClass;});
+  html+='<div class="table-wrap"><table><thead><tr><th>編號</th><th>姓名</th><th>班別</th><th>完成</th><th>平均分</th><th>操作</th></tr></thead><tbody>';
+  filtered.forEach(function(s){var sR=getStudentResults(s.id).filter(function(r){return!r.isPreview;});if(STATE.filterAssignment!=='all')sR=sR.filter(function(r){return r.assignmentId===STATE.filterAssignment;});var count=sR.length;var avg=count>0?Math.round(sR.reduce(function(a,r){return a+r.percentage;},0)/count):'-';
+    html+='<tr><td>'+s.id+'</td><td>'+escapeHtml(s.name)+'</td><td>'+s.class+'</td><td>'+count+'</td><td class="'+(typeof avg==='number'?getScoreColorClass(avg):'')+'">'+(typeof avg==='number'?avg+'%':avg)+'</td><td><button class="btn btn-sm" style="background:linear-gradient(90deg,#f72585,#7209b7);color:#fff;" onclick="enterPreviewAs(\''+s.id+'\')"><i class="fas fa-eye"></i></button></td></tr>';});
+  html+='</tbody></table></div></div>';return html;
 }
 
-async function handleRegister() {
-    var name = document.getElementById('reg-name').value.trim();
-    var username = document.getElementById('reg-username').value.trim();
-    var password = document.getElementById('reg-password').value.trim();
-    var role = document.getElementById('reg-role').value;
-    var studentClass = document.getElementById('reg-class').value.trim();
-
-    if (!name || !username || !password) { showToast('請填寫所有必填欄位', 'error'); return; }
-
-    showLoading();
-    var result = await api('register', { name:name, username:username, password:password, role:role, studentClass:studentClass });
-    hideLoading();
-
-    if (result.success) {
-        showToast('註冊成功！請登入');
-        showPage('login');
-        document.getElementById('login-username').value = username;
-    } else {
-        showToast(result.message || '註冊失敗', 'error');
-    }
+function renderMgAssignments(){
+  var html='<div class="card"><div class="card-header"><h3><i class="fas fa-tasks"></i> 功課管理</h3><button class="btn btn-pri btn-sm" onclick="showCreateAssignment()"><i class="fas fa-plus"></i> 新增功課</button></div>';
+  if(ASSIGNMENTS.length===0)html+='<p style="color:var(--text-light);padding:20px 0;">暫無功課</p>';
+  ASSIGNMENTS.forEach(function(a){
+    var done=RESULTS.filter(function(r){return r.assignmentId===a.id&&!r.isPreview;}).length;var at=getAssignedCount(a);
+    var isAll=!a.assignedStudents||a.assignedStudents.includes('all');
+    var classLabels='';if(isAll){classLabels='<span class="class-tag"><i class="fas fa-globe" style="font-size:9px;"></i> 全部</span>';}else{var cls2=Array.from(new Set(a.assignedStudents.map(function(sid){var st=USERS.students.find(function(s){return s.id===sid;});return st?st.class:null;}).filter(Boolean))).sort();classLabels=cls2.map(function(c){return '<span class="class-tag">'+c+'</span>';}).join('');}
+    html+='<div class="assign-card"><div class="assign-info"><h4>'+escapeHtml(a.name)+'</h4><div class="assign-meta"><span><i class="fas fa-question-circle"></i> '+a.questionIds.length+' 題</span><span><i class="fas fa-users"></i> '+done+'/'+at+' 已完成</span><span><i class="fas fa-calendar"></i> 截止：'+a.dueDate+'</span><span><i class="fas fa-user-check"></i> '+getAssignedLabel(a)+'</span></div><div style="margin-top:6px;">'+classLabels+'</div></div><div class="btn-group"><button class="btn btn-pri btn-sm" onclick="showEditAssignment(\''+a.id+'\')"><i class="fas fa-edit"></i></button><button class="btn btn-danger btn-sm" onclick="deleteAssignment(\''+a.id+'\')"><i class="fas fa-trash"></i></button></div></div>';
+  });
+  html+='</div>';return html;
 }
 
-function logout() {
-    currentUser = null;
-    cachedAssignments = [];
-    cachedMySubmissions = {};
-    showPage('login');
+function renderMgQuestions(){
+  var html='<div class="card"><div class="card-header"><h3><i class="fas fa-question-circle"></i> 題庫管理 ('+QUESTIONS.length+' 題)</h3><div class="btn-group"><button class="btn btn-pri btn-sm" onclick="showAddQuestion()"><i class="fas fa-plus"></i> 新增</button><button class="btn btn-sec btn-sm" onclick="showImportQuestions()"><i class="fas fa-upload"></i> 匯入</button></div></div>';
+  html+='<div class="tabs">';[{id:0,name:'全部'}].concat(TOPICS).forEach(function(t){var c=t.id===0?QUESTIONS.length:questionsByTopic(t.id).length;html+='<div class="tab '+((STATE.currentTopic||0)===t.id?'active':'')+'" onclick="STATE.currentTopic='+t.id+';render()">'+t.name+' <span class="tab-count">'+c+'</span></div>';});html+='</div>';
+  var filtered=STATE.currentTopic?questionsByTopic(STATE.currentTopic):QUESTIONS;
+  html+='<div class="table-wrap"><table><thead><tr><th>ID</th><th>課題</th><th>類型</th><th>題目</th><th>分數</th><th>操作</th></tr></thead><tbody>';filtered.forEach(function(q){var topic=TOPICS.find(function(t){return t.id===q.topicId;});html+='<tr><td>'+q.id+'</td><td>'+(topic?.name||'?')+'</td><td>'+(q.type==='mc'?'選擇題':'輸出題')+'</td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+escapeHtml(q.question.substring(0,50))+'</td><td>'+q.marks+'</td><td><button class="btn btn-danger btn-sm" onclick="deleteQuestion('+q.id+')"><i class="fas fa-trash"></i></button></td></tr>';});
+  html+='</tbody></table></div></div>';return html;
 }
 
-// ==================== INIT APP ====================
-function initApp() {
-    showPage('app');
-    document.getElementById('nav-user').textContent = currentUser.name + '（' + (currentUser.role === 'teacher' ? '老師' : '學生') + '）';
-    document.getElementById('sidebar-name').textContent = currentUser.name;
-    document.getElementById('sidebar-role').textContent = currentUser.role === 'teacher'
-        ? '👨‍🏫 老師'
-        : '👨‍🎓 學生' + (currentUser.class ? ' - ' + currentUser.class : '');
-
-    var menuItems = currentUser.role === 'teacher' ? [
-        { view:'dashboard', icon:'📊', label:'儀表板' },
-        { view:'manage-assignments', icon:'📝', label:'功課管理' },
-        { view:'grading', icon:'✅', label:'批改功課' },
-        { view:'students', icon:'👥', label:'學生列表' }
-    ] : [
-        { view:'dashboard', icon:'📊', label:'儀表板' },
-        { view:'my-assignments', icon:'📝', label:'我的功課' },
-        { view:'my-grades', icon:'📈', label:'成績查看' }
-    ];
-
-    var nav = document.getElementById('sidebar-nav');
-    nav.innerHTML = '';
-    menuItems.forEach(function(item) {
-        var btn = document.createElement('button');
-        btn.className = 'sidebar-item w-full text-left px-4 py-3 rounded-lg text-gray-700 font-medium flex items-center gap-3';
-        btn.dataset.view = item.view;
-        btn.innerHTML = '<span class="text-lg">' + item.icon + '</span><span>' + item.label + '</span>';
-        btn.onclick = function() {
-            navigateTo(item.view);
-            if (window.innerWidth < 1024) toggleSidebar();
-        };
-        nav.appendChild(btn);
-    });
-
-    navigateTo('dashboard');
+function renderAccountManagement(){
+  var ia=isAdmin();if(!ia)STATE.accountTab='students';
+  var html='';
+  if(ia){html+='<div class="tabs"><div class="tab '+(STATE.accountTab==='teachers'?'active':'')+'" onclick="STATE.accountTab=\'teachers\';render()"><i class="fas fa-chalkboard-teacher"></i> 教師 <span class="tab-count">'+USERS.teachers.length+'</span></div><div class="tab '+(STATE.accountTab==='students'?'active':'')+'" onclick="STATE.accountTab=\'students\';render()"><i class="fas fa-user-graduate"></i> 學生 <span class="tab-count">'+USERS.students.length+'</span></div></div>';}
+  if(STATE.accountTab==='teachers'&&ia)html+=renderTeacherAccountsTab();else html+=renderStudentAccountsTab();return html;
 }
 
-async function navigateTo(view) {
-    showView(view);
-    switch(view) {
-        case 'dashboard': await loadDashboard(); break;
-        case 'manage-assignments': await loadAssignments(); break;
-        case 'grading': await loadGradingPage(); break;
-        case 'students': await loadStudents(); break;
-        case 'my-assignments': await loadMyAssignments(); break;
-        case 'my-grades': await loadMyGrades(); break;
-    }
+function renderTeacherAccountsTab(){
+  var q=STATE.teacherSearchQuery||'';var filtered=USERS.teachers.slice();if(q){var ql=q.toLowerCase();filtered=filtered.filter(function(t){return t.name.toLowerCase().includes(ql)||t.id.toLowerCase().includes(ql);});}
+  var html='<div class="card"><div class="card-header"><h3><i class="fas fa-chalkboard-teacher"></i> 教師賬戶</h3><button class="btn btn-pri btn-sm" onclick="showAddTeacher()"><i class="fas fa-plus"></i> 新增</button></div><div style="margin-bottom:16px;"><div class="form-group" style="margin:0;"><input type="text" placeholder="🔍 搜尋教師..." value="'+escapeHtml(q)+'" oninput="STATE.teacherSearchQuery=this.value;render()"></div></div><div class="table-wrap"><table><thead><tr><th>編號</th><th>用戶名</th><th>姓名</th><th>密碼</th><th>操作</th></tr></thead><tbody>';
+  filtered.forEach(function(t){html+='<tr><td>'+escapeHtml(t.id)+'</td><td>'+escapeHtml(t.username)+'</td><td><strong>'+escapeHtml(t.name)+'</strong></td><td><code style="background:#f0f0f0;padding:2px 6px;border-radius:4px;font-size:12px;">'+escapeHtml(t.password)+'</code></td><td><div class="btn-group"><button class="btn btn-pri btn-icon" onclick="showEditTeacher(\''+t.id+'\')"><i class="fas fa-edit"></i></button><button class="btn btn-danger btn-icon" onclick="deleteTeacher(\''+t.id+'\')"><i class="fas fa-trash"></i></button></div></td></tr>';});
+  html+='</tbody></table></div></div>';return html;
 }
 
-// ==================== DASHBOARD ====================
-async function loadDashboard() {
-    showLoading();
-    var aResult = await api('getAssignments');
-    var assignments = aResult.success ? aResult.assignments : [];
-    var stats = [];
-
-    if (currentUser.role === 'teacher') {
-        var sResult = await api('getStudents');
-        var students = sResult.success ? sResult.students : [];
-        stats = [
-            { label:'總功課數', value:assignments.length, icon:'📝', bg:'bg-blue-50', text:'text-blue-600' },
-            { label:'學生人數', value:students.length, icon:'👥', bg:'bg-green-50', text:'text-green-600' },
-            { label:'最近新增', value: assignments.length > 0 ? escapeHtml(assignments[assignments.length-1].title) : '—', icon:'📋', bg:'bg-purple-50', text:'text-purple-600', small:true }
-        ];
-    } else {
-        var mResult = await api('getMySubmissions', { username: currentUser.username });
-        var mySubs = mResult.success ? mResult.submissions : [];
-        var graded = mySubs.filter(hasScore);
-        var avg = graded.length > 0 ? Math.round(graded.reduce(function(s,x){ return s + Number(x.score); }, 0) / graded.length) : '—';
-        stats = [
-            { label:'總功課數', value:assignments.length, icon:'📝', bg:'bg-blue-50', text:'text-blue-600' },
-            { label:'已提交', value:mySubs.length, icon:'✅', bg:'bg-green-50', text:'text-green-600' },
-            { label:'平均分數', value:avg, icon:'📈', bg:'bg-purple-50', text:'text-purple-600' }
-        ];
-    }
-
-    document.getElementById('dashboard-stats').innerHTML = stats.map(function(s) {
-        return '<div class="bg-white rounded-xl shadow-md p-6"><div class="flex items-center justify-between"><div>' +
-            '<p class="text-sm text-gray-500">' + s.label + '</p>' +
-            '<p class="' + (s.small ? 'text-lg truncate max-w-xs' : 'text-3xl') + ' font-bold text-gray-800 mt-1">' + s.value + '</p>' +
-            '</div><div class="text-4xl ' + s.bg + ' ' + s.text + ' p-3 rounded-xl">' + s.icon + '</div></div></div>';
-    }).join('');
-
-    var recent = assignments.slice(-5).reverse();
-    document.getElementById('dashboard-recent').innerHTML = recent.length === 0
-        ? '<p class="text-gray-400 text-sm">暫無功課</p>'
-        : recent.map(function(a) {
-            return '<div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">' +
-                '<div><p class="font-medium text-gray-800">' + escapeHtml(a.title) + '</p>' +
-                '<p class="text-sm text-gray-400">截止：' + formatDate(a.dueDate) + '</p></div></div>';
-        }).join('');
-
-    hideLoading();
+function renderStudentAccountsTab(){
+  var classes=getAllClasses();var q=STATE.searchQuery||'';var filtered=USERS.students.slice();if(STATE.filterClass!=='all')filtered=filtered.filter(function(s){return s.class===STATE.filterClass;});if(q){var ql=q.toLowerCase();filtered=filtered.filter(function(s){return s.name.toLowerCase().includes(ql)||s.id.toLowerCase().includes(ql);});}
+  var html='<div class="card"><div class="card-header"><h3><i class="fas fa-user-graduate"></i> 學生賬戶</h3><div class="btn-group"><button class="btn btn-pri btn-sm" onclick="showAddStudent()"><i class="fas fa-plus"></i> 新增</button><button class="btn btn-sec btn-sm" onclick="showBatchActions()"><i class="fas fa-cogs"></i> 批量</button></div></div><div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;"><div class="form-group" style="margin:0;flex:1;min-width:180px;"><input type="text" placeholder="🔍 搜尋學生..." value="'+escapeHtml(q)+'" oninput="STATE.searchQuery=this.value;render()"></div><div class="form-group" style="margin:0;min-width:120px;"><select onchange="STATE.filterClass=this.value;render()"><option value="all">所有班別</option>'+classes.map(function(c){return '<option value="'+c+'" '+(STATE.filterClass===c?'selected':'')+'>'+c+'</option>';}).join('')+'</select></div></div><div class="table-wrap"><table><thead><tr><th>編號</th><th>用戶名</th><th>姓名</th><th>班別</th><th>密碼</th><th>操作</th></tr></thead><tbody>';
+  filtered.forEach(function(s){html+='<tr><td>'+s.id+'</td><td>'+escapeHtml(s.username)+'</td><td><strong>'+escapeHtml(s.name)+'</strong></td><td><span class="perm-tag perm-student">'+s.class+'</span></td><td><code style="background:#f0f0f0;padding:2px 6px;border-radius:4px;font-size:12px;">'+escapeHtml(s.password)+'</code></td><td><div class="btn-group"><button class="btn btn-pri btn-icon" onclick="showEditStudent(\''+s.id+'\')"><i class="fas fa-edit"></i></button><button class="btn btn-icon" style="background:linear-gradient(90deg,#f72585,#7209b7);color:#fff;" onclick="enterPreviewAs(\''+s.id+'\')"><i class="fas fa-eye"></i></button><button class="btn btn-danger btn-icon" onclick="deleteStudent(\''+s.id+'\')"><i class="fas fa-trash"></i></button></div></td></tr>';});
+  html+='</tbody></table></div></div>';return html;
 }
 
-// ==================== TEACHER: ASSIGNMENTS ====================
-function showCreateForm() { document.getElementById('create-form').classList.remove('hidden'); }
-function hideCreateForm() {
-    document.getElementById('create-form').classList.add('hidden');
-    document.getElementById('new-title').value = '';
-    document.getElementById('new-desc').value = '';
-    document.getElementById('new-due').value = '';
+function renderMgGForm(){
+  return '<div class="card"><h3><i class="fas fa-file-export"></i> Google Form 設定</h3><p style="color:var(--text-light);margin-bottom:16px;font-size:14px;">連接 Google Form 後，成績會自動提交。</p><div class="form-group"><label>Google Form URL</label><input id="gf-url" type="text" value="'+escapeHtml(GFORM.formUrl)+'" placeholder="https://docs.google.com/forms/d/e/XXXXX/formResponse"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;"><div class="form-group"><label>學生姓名 Entry</label><input id="gf-name" value="'+escapeHtml(GFORM.entryStudentName)+'" placeholder="entry.XXXXXXX"></div><div class="form-group"><label>學生編號 Entry</label><input id="gf-id" value="'+escapeHtml(GFORM.entryStudentId)+'" placeholder="entry.XXXXXXX"></div><div class="form-group"><label>班別 Entry</label><input id="gf-class" value="'+escapeHtml(GFORM.entryClass)+'" placeholder="entry.XXXXXXX"></div><div class="form-group"><label>功課名稱 Entry</label><input id="gf-assign" value="'+escapeHtml(GFORM.entryAssignment)+'" placeholder="entry.XXXXXXX"></div><div class="form-group"><label>得分 Entry</label><input id="gf-score" value="'+escapeHtml(GFORM.entryScore)+'" placeholder="entry.XXXXXXX"></div><div class="form-group"><label>總分 Entry</label><input id="gf-total" value="'+escapeHtml(GFORM.entryTotal)+'" placeholder="entry.XXXXXXX"></div><div class="form-group"><label>百分比 Entry</label><input id="gf-pct" value="'+escapeHtml(GFORM.entryPercent)+'" placeholder="entry.XXXXXXX"></div><div class="form-group"><label>日期 Entry</label><input id="gf-date" value="'+escapeHtml(GFORM.entryDate)+'" placeholder="entry.XXXXXXX"></div></div><button class="btn btn-pri" onclick="saveGFormConfig()"><i class="fas fa-save"></i> 儲存</button></div>';
 }
 
-async function loadAssignments() {
-    showLoading();
-    var result = await api('getAssignments');
-    hideLoading();
-    if (!result.success) { showToast(result.message, 'error'); return; }
-
-    cachedAssignments = result.assignments;
-    var list = document.getElementById('assignments-list');
-
-    if (result.assignments.length === 0) {
-        list.innerHTML = '<div class="bg-white rounded-xl shadow-md p-8 text-center text-gray-400">暫無功課，點擊上方按鈕新增</div>';
-        return;
-    }
-
-    list.innerHTML = result.assignments.slice().reverse().map(function(a) {
-        return '<div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">' +
-            '<div class="flex items-start justify-between gap-4">' +
-            '<div class="flex-1 min-w-0">' +
-            '<h3 class="text-lg font-bold text-gray-800">' + escapeHtml(a.title) + '</h3>' +
-            '<p class="text-sm text-gray-400 mt-1">截止：' + formatDate(a.dueDate) + ' ｜ 建立：' + formatDate(a.createdAt) + '</p>' +
-            (a.description ? '<pre class="mt-3 text-sm text-gray-600 whitespace-pre-wrap bg-gray-50 rounded-lg p-4 overflow-x-auto">' + escapeHtml(a.description) + '</pre>' : '') +
-            '</div>' +
-            '<button onclick="handleDelete(\'' + a.id + '\')" class="text-gray-300 hover:text-red-500 transition flex-shrink-0 mt-1" title="刪除">' +
-            '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>' +
-            '</button></div></div>';
-    }).join('');
+// ==================== ASYNC ACTIONS (with API) ====================
+async function doLogin(){
+  var role=document.getElementById('login-role').value;
+  var username=document.getElementById('login-user').value.trim();
+  var password=document.getElementById('login-pass').value;
+  if(!username||!password){toast('請輸入用戶名稱和密碼','error');return;}
+  showLoading('正在登入...');
+  var result=await apiCall('login',{username:username,password:password,role:role});
+  if(!result.success){hideLoading();toast(result.message||'登入失敗','error');return;}
+  STATE.currentUser=result.user;
+  showLoading('正在載入資料...');
+  var dataResult=await reloadData();
+  if(!dataResult.success){hideLoading();toast('無法載入資料','error');return;}
+  // Auto-seed default data if empty
+  if(USERS.students.length===0&&QUESTIONS.length===0){
+    showLoading('首次使用，正在初始化預設資料...');
+    await seedDefaultData();
+  }
+  STATE.view=role==='student'?'student-dashboard':'management-dashboard';
+  STATE.managementTab='results';STATE.previewMode=false;
+  hideLoading();toast('歡迎回來，'+result.user.name+'！','success');render();
 }
 
-async function createAssignment() {
-    var title = document.getElementById('new-title').value.trim();
-    var desc = document.getElementById('new-desc').value.trim();
-    var due = document.getElementById('new-due').value;
-    if (!title) { showToast('請輸入功課標題', 'error'); return; }
+function doLogout(){STATE.currentUser=null;STATE.view='login';STATE.sidebarOpen=false;STATE.previewMode=false;STATE.previewStudentId=null;render();}
+function navigate(view){STATE.view=view;STATE.sidebarOpen=false;render();window.scrollTo(0,0);}
+function toggleSidebar(){STATE.sidebarOpen=!STATE.sidebarOpen;document.getElementById('sidebar')?.classList.toggle('open',STATE.sidebarOpen);}
+function enterPreview(){if(USERS.students.length===0){toast('沒有學生','error');return;}STATE.previewMode=true;STATE.previewStudentId=STATE.previewStudentId||USERS.students[0].id;STATE.view='student-dashboard';STATE.sidebarOpen=false;STATE.quizAnswers={};STATE.quizSubmitted=false;STATE.currentQuiz=null;render();}
+function enterPreviewAs(sid){STATE.previewMode=true;STATE.previewStudentId=sid;STATE.view='student-dashboard';STATE.sidebarOpen=false;STATE.quizAnswers={};STATE.quizSubmitted=false;STATE.currentQuiz=null;render();}
+function switchPreviewStudent(sid){STATE.previewStudentId=sid;STATE.view='student-dashboard';STATE.quizAnswers={};STATE.quizSubmitted=false;STATE.currentQuiz=null;render();}
+function exitPreview(){STATE.previewMode=false;STATE.view='management-dashboard';STATE.sidebarOpen=false;STATE.quizAnswers={};STATE.quizSubmitted=false;STATE.currentQuiz=null;render();}
+function openTopic(tid){STATE.currentTopic=tid;STATE.view='topic-questions';render();}
+function startTopicQuiz(tid){var qs=questionsByTopic(tid);if(qs.length===0){toast('暫無題目','error');return;}var t=TOPICS.find(function(t){return t.id===tid;});STATE.currentQuiz={name:t.name+' — 練習',questions:qs,topicId:tid,assignmentId:null};STATE.quizAnswers={};STATE.quizSubmitted=false;STATE.view='quiz';render();}
+function startAssignment(aid){var a=ASSIGNMENTS.find(function(a){return a.id===aid;});if(!a)return;var qs=a.questionIds.map(function(qid){return questionById(qid);}).filter(Boolean);if(qs.length===0){toast('暫無題目','error');return;}STATE.currentQuiz={name:a.name,questions:qs,topicId:null,assignmentId:a.id};STATE.quizAnswers={};STATE.quizSubmitted=false;STATE.view='quiz';render();}
+function selectAnswer(qid,oi){if(STATE.quizSubmitted)return;STATE.quizAnswers[qid]=oi;render();}
+function textAnswer(qid,val){STATE.quizAnswers[qid]=val;}
+function viewResult(rid){STATE.selectedResult=rid;STATE.view='quiz-result';render();}
 
-    showLoading();
-    var result = await api('createAssignment', { title:title, description:desc, dueDate:due, createdBy:currentUser.username });
-    hideLoading();
+function submitQuiz(){var quiz=STATE.currentQuiz;var qs=quiz.questions;var un=qs.filter(function(q){return STATE.quizAnswers[q.id]===undefined||STATE.quizAnswers[q.id]==='';});if(un.length>0){confirmDialog('確認提交','你仍有 '+un.length+' 題未作答，確定提交？',doSubmitQuiz);return;}doSubmitQuiz();}
 
-    if (result.success) {
-        showToast('功課已建立！');
-        hideCreateForm();
-        await loadAssignments();
-    } else {
-        showToast(result.message, 'error');
-    }
+async function doSubmitQuiz(){
+  var quiz=STATE.currentQuiz;var qs=quiz.questions;STATE.quizSubmitted=true;
+  var score=0,total=0;qs.forEach(function(q){total+=q.marks;if(q.type==='mc'&&STATE.quizAnswers[q.id]===q.answer)score+=q.marks;else if(q.type==='output'&&normalizeOutput(STATE.quizAnswers[q.id])===normalizeOutput(q.correctOutput))score+=q.marks;});
+  var pct=total>0?Math.round(score/total*100):0;var eu=getEffectiveUser();var ip=isPreviewMode();
+  var result={id:'R'+Date.now(),studentId:eu.id,studentName:eu.name,studentClass:eu.class,assignmentId:quiz.assignmentId||'',topicId:quiz.topicId||'',quizName:quiz.name,questions:qs,answers:STATE.quizAnswers,score:score,total:total,percentage:pct,date:formatDate(),isPreview:ip};
+  // Save to API
+  await apiCall('addResult',result);
+  RESULTS.push(result);
+  if(!ip)submitToGoogleForm(result);
+  toast('已提交！得分：'+score+'/'+total+' ('+pct+'%)','success');render();window.scrollTo(0,0);
 }
 
-async function handleDelete(id) {
-    var ok = await customConfirm('確定要刪除此功課嗎？此操作無法復原。');
-    if (!ok) return;
-
-    showLoading();
-    var result = await api('deleteAssignment', { id: id });
-    hideLoading();
-
-    if (result.success) {
-        showToast('功課已刪除');
-        await loadAssignments();
-    } else {
-        showToast(result.message, 'error');
-    }
+// ==================== ASSIGNMENT CRUD ====================
+function showCreateAssignment(){
+  initPickerState('create-assign-picker',['all']);
+  var pickerHTML=buildStudentPickerHTML('create-assign-picker',['all'],'all','');
+  showModal('<h3><i class="fas fa-plus-circle" style="color:var(--success)"></i> 新增功課</h3><div class="modal-section"><h4><i class="fas fa-info-circle"></i> 基本資料</h4><div class="form-row"><div class="form-group"><label>功課名稱</label><input id="na-name" type="text" placeholder="例如：練習三"></div><div class="form-group"><label>截止日期</label><input id="na-due" type="date" value="'+new Date(Date.now()+14*86400000).toISOString().split('T')[0]+'"></div></div></div><div class="modal-section"><h4><i class="fas fa-question-circle"></i> 選擇題目</h4><div class="form-group"><label>篩選課題</label><select id="na-topic" onchange="updateAssignQList()"><option value="0">全部</option>'+TOPICS.map(function(t){return '<option value="'+t.id+'">'+t.name+'</option>';}).join('')+'</select></div><div class="form-group"><label>選擇題目 (Ctrl/Cmd 多選)</label><select id="na-questions" multiple style="height:160px;">'+QUESTIONS.map(function(q){return '<option value="'+q.id+'">['+(TOPICS.find(function(t){return t.id===q.topicId;})?.name||'')+'] '+q.question.substring(0,40)+'...</option>';}).join('')+'</select></div></div><div class="modal-section"><h4><i class="fas fa-user-check"></i> 派發給學生</h4><div id="create-assign-picker-wrap">'+pickerHTML+'</div></div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-pri" onclick="createAssignment()"><i class="fas fa-check"></i> 建立</button></div>');
 }
 
-// ==================== TEACHER: GRADING ====================
-async function loadGradingPage() {
-    showLoading();
-    var result = await api('getAssignments');
-    hideLoading();
+function updateAssignQList(){var tid=parseInt(document.getElementById('na-topic').value);var sel=document.getElementById('na-questions');var qs=tid?questionsByTopic(tid):QUESTIONS;sel.innerHTML=qs.map(function(q){return '<option value="'+q.id+'">['+(TOPICS.find(function(t){return t.id===q.topicId;})?.name||'')+'] '+q.question.substring(0,40)+'...</option>';}).join('');}
 
-    var select = document.getElementById('grading-select');
-    select.innerHTML = '<option value="">-- 請選擇功課 --</option>';
-    if (result.success) {
-        result.assignments.slice().reverse().forEach(function(a) {
-            select.innerHTML += '<option value="' + a.id + '">' + escapeHtml(a.title) + '（截止：' + formatDate(a.dueDate) + '）</option>';
-        });
-    }
-    document.getElementById('submissions-list').innerHTML = '';
+async function createAssignment(){
+  var name=document.getElementById('na-name').value.trim();var due=document.getElementById('na-due').value;
+  var sel=document.getElementById('na-questions');var qids=Array.from(sel.selectedOptions).map(function(o){return parseInt(o.value);});
+  if(!name){toast('請輸入名稱','error');return;}if(qids.length===0){toast('請選擇題目','error');return;}
+  var ps=_pickerState['create-assign-picker'];if(!ps||ps.selected.length===0){toast('請選擇學生','error');return;}
+  var topicIds=Array.from(new Set(qids.map(function(qid){var q=questionById(qid);return q?q.topicId:null;}).filter(Boolean)));
+  var data={id:nextAssignmentId(),name:name,topicIds:topicIds,questionIds:qids,dueDate:due,createdAt:formatDate(),assignedStudents:ps.selected.slice()};
+  showLoading('正在建立功課...');var result=await apiCall('createAssignment',data);
+  if(!result.success){hideLoading();toast(result.message,'error');return;}
+  await reloadData();hideLoading();closeModal();toast('功課已建立！','success');render();
 }
 
-async function loadSubmissionsForGrading() {
-    var aid = document.getElementById('grading-select').value;
-    var list = document.getElementById('submissions-list');
-    if (!aid) { list.innerHTML = ''; return; }
-
-    showLoading();
-    var result = await api('getSubmissions', { assignmentId: aid });
-    hideLoading();
-
-    if (!result.success || result.submissions.length === 0) {
-        list.innerHTML = '<div class="bg-white rounded-xl shadow-md p-8 text-center text-gray-400">暫無學生提交</div>';
-        return;
-    }
-
-    list.innerHTML = result.submissions.map(function(s) {
-        var scored = hasScore(s);
-        return '<div class="bg-white rounded-xl shadow-md p-6 ' + (scored ? 'border-l-4 border-green-400' : 'border-l-4 border-yellow-400') + '">' +
-            '<div class="flex flex-wrap items-center justify-between gap-2 mb-3">' +
-            '<div><span class="font-bold text-gray-800">' + escapeHtml(s.studentName) + '</span>' +
-            '<span class="text-sm text-gray-400 ml-2">(' + escapeHtml(s.username) + ')</span></div>' +
-            '<span class="text-xs text-gray-400">提交：' + formatDate(s.submittedAt) + '</span></div>' +
-            '<pre class="bg-gray-900 text-green-400 rounded-lg p-4 text-sm overflow-x-auto mb-4 whitespace-pre-wrap max-h-64 overflow-y-auto">' + escapeHtml(s.answer) + '</pre>' +
-            '<div class="flex flex-wrap items-end gap-3">' +
-            '<div><label class="block text-xs font-medium text-gray-500 mb-1">分數 (0-100)</label>' +
-            '<input type="number" id="score-' + s.id + '" min="0" max="100" value="' + (scored ? s.score : '') + '" class="w-24 border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500" placeholder="分數"></div>' +
-            '<div class="flex-1 min-w-0"><label class="block text-xs font-medium text-gray-500 mb-1">評語</label>' +
-            '<input type="text" id="fb-' + s.id + '" value="' + escapeHtml(s.feedback || '') + '" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500" placeholder="輸入評語..."></div>' +
-            '<button onclick="gradeOne(\'' + s.id + '\')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap">' +
-            (scored ? '✏️ 更新' : '✅ 評分') + '</button></div>' +
-            (s.gradedAt ? '<p class="text-xs text-gray-300 mt-2">上次評分：' + formatDate(s.gradedAt) + '</p>' : '') +
-            '</div>';
-    }).join('');
+function showEditAssignment(aid){
+  var a=ASSIGNMENTS.find(function(x){return x.id===aid;});if(!a)return;
+  initPickerState('edit-assign-picker',a.assignedStudents||['all']);
+  var pickerHTML=buildStudentPickerHTML('edit-assign-picker',a.assignedStudents||['all'],'all','');
+  showModal('<h3><i class="fas fa-edit" style="color:var(--pri)"></i> 修改功課</h3><div class="modal-section"><h4><i class="fas fa-info-circle"></i> 基本資料</h4><div class="form-row"><div class="form-group"><label>名稱</label><input id="ea-name" type="text" value="'+escapeHtml(a.name)+'"></div><div class="form-group"><label>截止日期</label><input id="ea-due" type="date" value="'+a.dueDate+'"></div></div></div><div class="modal-section"><h4><i class="fas fa-user-check"></i> 派發給學生</h4><div id="edit-assign-picker-wrap">'+pickerHTML+'</div></div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-pri" onclick="saveEditAssignment(\''+aid+'\')"><i class="fas fa-save"></i> 儲存</button></div>');
 }
 
-async function gradeOne(sid) {
-    var scoreEl = document.getElementById('score-' + sid);
-    var fbEl = document.getElementById('fb-' + sid);
-    if (!scoreEl || scoreEl.value === '') { showToast('請輸入分數', 'error'); return; }
-
-    showLoading();
-    var result = await api('gradeSubmission', { submissionId: sid, score: Number(scoreEl.value), feedback: fbEl.value });
-    hideLoading();
-
-    if (result.success) {
-        showToast('已評分！');
-        await loadSubmissionsForGrading();
-    } else {
-        showToast(result.message, 'error');
-    }
+async function saveEditAssignment(aid){
+  var a=ASSIGNMENTS.find(function(x){return x.id===aid;});if(!a)return;
+  var name=document.getElementById('ea-name').value.trim();var due=document.getElementById('ea-due').value;
+  if(!name){toast('名稱不能為空','error');return;}
+  var ps=_pickerState['edit-assign-picker'];if(!ps||ps.selected.length===0){toast('請選擇學生','error');return;}
+  showLoading('正在更新...');
+  var result=await apiCall('updateAssignment',{id:aid,name:name,topicIds:a.topicIds,questionIds:a.questionIds,dueDate:due,assignedStudents:ps.selected.slice()});
+  if(!result.success){hideLoading();toast(result.message,'error');return;}
+  await reloadData();hideLoading();closeModal();toast('已更新','success');render();
 }
 
-// ==================== TEACHER: STUDENTS ====================
-async function loadStudents() {
-    showLoading();
-    var result = await api('getStudents');
-    hideLoading();
+function deleteAssignment(aid){confirmDialog('刪除功課','確定刪除？',async function(){
+  showLoading('正在刪除...');await apiCall('deleteAssignment',{id:aid});await reloadData();hideLoading();toast('已刪除','success');render();
+});}
 
-    var el = document.getElementById('students-table');
-    if (!result.success || result.students.length === 0) {
-        el.innerHTML = '<div class="p-8 text-center text-gray-400">暫無學生註冊</div>';
-        return;
-    }
+// ==================== STUDENT CRUD ====================
+function showAddStudent(){var nextId='S'+String(USERS.students.length+1).padStart(3,'0');showModal('<h3><i class="fas fa-user-plus" style="color:var(--success)"></i> 新增學生</h3><div class="modal-section"><h4>基本資料</h4><div class="form-row"><div class="form-group"><label>編號</label><input id="ns-id" type="text" value="'+nextId+'"></div><div class="form-group"><label>用戶名</label><input id="ns-username" type="text" placeholder="student9"></div></div><div class="form-row"><div class="form-group"><label>姓名</label><input id="ns-name" type="text" placeholder="陳小明"></div><div class="form-group"><label>班別</label><input id="ns-class" type="text" placeholder="4A"></div></div></div><div class="modal-section"><h4>密碼</h4><div class="form-group" style="margin:0;"><div class="password-field"><input id="ns-password" type="text" value="123456"><button class="password-toggle" onclick="document.getElementById(\'ns-password\').value=generatePassword()"><i class="fas fa-random"></i></button></div></div></div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-pri" onclick="addStudent()">新增</button></div>');}
 
-    el.innerHTML = '<div class="overflow-x-auto"><table class="w-full"><thead class="bg-gray-50"><tr>' +
-        '<th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">#</th>' +
-        '<th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">姓名</th>' +
-        '<th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">帳號</th>' +
-        '<th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">班別</th>' +
-        '</tr></thead><tbody class="divide-y divide-gray-100">' +
-        result.students.map(function(s, i) {
-            return '<tr class="hover:bg-gray-50 transition">' +
-                '<td class="px-6 py-4 text-sm text-gray-400">' + (i+1) + '</td>' +
-                '<td class="px-6 py-4 text-sm font-medium text-gray-800">' + escapeHtml(s.name) + '</td>' +
-                '<td class="px-6 py-4 text-sm text-gray-500">' + escapeHtml(s.username) + '</td>' +
-                '<td class="px-6 py-4 text-sm text-gray-500">' + escapeHtml(s.class || '-') + '</td></tr>';
-        }).join('') +
-        '</tbody></table></div>';
+async function addStudent(){
+  var id=document.getElementById('ns-id').value.trim(),username=document.getElementById('ns-username').value.trim(),name=document.getElementById('ns-name').value.trim(),cls=document.getElementById('ns-class').value.trim(),password=document.getElementById('ns-password').value;
+  if(!id||!username||!name||!cls||!password){toast('請填寫所有欄位','error');return;}
+  showLoading('正在新增...');var result=await apiCall('addUser',{id:id,username:username,password:password,name:name,role:'student',class:cls});
+  if(!result.success){hideLoading();toast(result.message,'error');return;}
+  await reloadData();hideLoading();closeModal();toast('學生已新增','success');render();
 }
 
-// ==================== STUDENT: MY ASSIGNMENTS ====================
-async function loadMyAssignments() {
-    showLoading();
-    var results = await Promise.all([
-        api('getAssignments'),
-        api('getMySubmissions', { username: currentUser.username })
-    ]);
-    hideLoading();
+function showEditStudent(sid){var s=USERS.students.find(function(s){return s.id===sid;});if(!s)return;showModal('<h3><i class="fas fa-user-edit" style="color:var(--pri)"></i> 修改學生</h3><div class="modal-section"><div class="form-row"><div class="form-group"><label>編號</label><input id="es-id" type="text" value="'+escapeHtml(s.id)+'"></div><div class="form-group"><label>用戶名</label><input id="es-username" type="text" value="'+escapeHtml(s.username)+'"></div></div><div class="form-row"><div class="form-group"><label>姓名</label><input id="es-name" type="text" value="'+escapeHtml(s.name)+'"></div><div class="form-group"><label>班別</label><input id="es-class" type="text" value="'+escapeHtml(s.class)+'"></div></div></div><div class="modal-section"><h4>密碼</h4><div class="form-group" style="margin:0;"><div class="password-field"><input id="es-password" type="text" value="'+escapeHtml(s.password)+'"><button class="password-toggle" onclick="document.getElementById(\'es-password\').value=generatePassword()"><i class="fas fa-random"></i></button></div></div></div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-pri" onclick="saveEditStudent(\''+s.id+'\')"><i class="fas fa-save"></i> 儲存</button></div>');}
 
-    cachedAssignments = results[0].success ? results[0].assignments : [];
-    var subs = results[1].success ? results[1].submissions : [];
-    cachedMySubmissions = {};
-    subs.forEach(function(s) { cachedMySubmissions[s.assignmentId] = s; });
-
-    var list = document.getElementById('my-assignments-list');
-    if (cachedAssignments.length === 0) {
-        list.innerHTML = '<div class="bg-white rounded-xl shadow-md p-8 text-center text-gray-400">暫無功課</div>';
-        return;
-    }
-
-    list.innerHTML = cachedAssignments.slice().reverse().map(function(a) {
-        var sub = cachedMySubmissions[a.id];
-        var badge;
-        if (sub && hasScore(sub)) {
-            badge = '<span class="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">已批改 ' + sub.score + '分</span>';
-        } else if (sub) {
-            badge = '<span class="bg-yellow-100 text-yellow-700 text-xs font-semibold px-3 py-1 rounded-full">已提交，待批改</span>';
-        } else {
-            badge = '<span class="bg-red-100 text-red-700 text-xs font-semibold px-3 py-1 rounded-full">未提交</span>';
-        }
-
-        var html = '<div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">' +
-            '<div class="flex flex-wrap items-start justify-between gap-2 mb-2">' +
-            '<h3 class="text-lg font-bold text-gray-800">' + escapeHtml(a.title) + '</h3>' + badge + '</div>' +
-            '<p class="text-sm text-gray-400 mb-3">截止日期：' + formatDate(a.dueDate) + '</p>';
-
-        if (a.description) {
-            html += '<pre class="text-sm text-gray-600 whitespace-pre-wrap bg-gray-50 rounded-lg p-4 mb-4 overflow-x-auto">' + escapeHtml(a.description) + '</pre>';
-        }
-
-        if (sub) {
-            html += '<details class="mb-4"><summary class="text-sm text-indigo-600 cursor-pointer hover:underline font-medium">查看我的提交</summary>' +
-                '<pre class="bg-gray-900 text-green-400 rounded-lg p-4 text-sm mt-2 whitespace-pre-wrap overflow-x-auto max-h-48 overflow-y-auto">' + escapeHtml(sub.answer) + '</pre>';
-            if (sub.feedback) {
-                html += '<p class="text-sm text-indigo-600 mt-2 bg-indigo-50 p-3 rounded-lg">💬 老師評語：' + escapeHtml(sub.feedback) + '</p>';
-            }
-            html += '</details>';
-        }
-
-        html += '<button onclick="openModal(\'' + a.id + '\')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition">' +
-            (sub ? '📝 重新提交' : '📤 提交功課') + '</button></div>';
-
-        return html;
-    }).join('');
+async function saveEditStudent(oldId){
+  var nId=document.getElementById('es-id').value.trim(),nU=document.getElementById('es-username').value.trim(),nN=document.getElementById('es-name').value.trim(),nC=document.getElementById('es-class').value.trim(),nP=document.getElementById('es-password').value;
+  if(!nId||!nU||!nN||!nC||!nP){toast('所有欄位不能為空','error');return;}
+  showLoading('正在更新...');var result=await apiCall('updateUser',{oldId:oldId,id:nId,username:nU,password:nP,name:nN,role:'student',class:nC});
+  if(!result.success){hideLoading();toast(result.message,'error');return;}
+  await reloadData();hideLoading();closeModal();toast('已更新','success');render();
 }
 
-function openModal(assignmentId) {
-    var a = cachedAssignments.find(function(x) { return x.id === assignmentId; });
-    if (!a) return;
-    var sub = cachedMySubmissions[assignmentId];
-    currentModalAssignmentId = assignmentId;
-    document.getElementById('modal-title').textContent = a.title;
-    document.getElementById('modal-desc').textContent = a.description || '（無說明）';
-    document.getElementById('modal-answer').value = sub ? sub.answer : '';
-    document.getElementById('submit-modal').classList.remove('hidden');
+function deleteStudent(sid){var s=USERS.students.find(function(s){return s.id===sid;});if(!s)return;confirmDialog('刪除學生','確定刪除「'+s.name+'」？',async function(){
+  showLoading('正在刪除...');await apiCall('deleteUser',{id:sid});await reloadData();hideLoading();toast('已刪除','success');render();
+});}
+
+// ==================== TEACHER CRUD ====================
+function showAddTeacher(){var nextId='T'+String(USERS.teachers.length+1).padStart(3,'0');showModal('<h3><i class="fas fa-user-plus" style="color:var(--success)"></i> 新增教師</h3><div class="modal-section"><div class="form-row"><div class="form-group"><label>編號</label><input id="nt-id" type="text" value="'+nextId+'"></div><div class="form-group"><label>用戶名</label><input id="nt-username" type="text" placeholder="teacher3"></div></div><div class="form-group"><label>姓名</label><input id="nt-name" type="text" placeholder="王老師"></div></div><div class="modal-section"><h4>密碼</h4><div class="form-group" style="margin:0;"><div class="password-field"><input id="nt-password" type="text" value="teacher123"><button class="password-toggle" onclick="document.getElementById(\'nt-password\').value=generatePassword()"><i class="fas fa-random"></i></button></div></div></div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-pri" onclick="addTeacher()">新增</button></div>');}
+
+async function addTeacher(){
+  var id=document.getElementById('nt-id').value.trim(),username=document.getElementById('nt-username').value.trim(),name=document.getElementById('nt-name').value.trim(),password=document.getElementById('nt-password').value;
+  if(!id||!username||!name||!password){toast('請填寫所有欄位','error');return;}
+  showLoading('正在新增...');var result=await apiCall('addUser',{id:id,username:username,password:password,name:name,role:'teacher',class:''});
+  if(!result.success){hideLoading();toast(result.message,'error');return;}
+  await reloadData();hideLoading();closeModal();toast('教師已新增','success');render();
 }
 
-function closeModal() {
-    document.getElementById('submit-modal').classList.add('hidden');
-    currentModalAssignmentId = null;
+function showEditTeacher(tid){var t=USERS.teachers.find(function(t){return t.id===tid;});if(!t)return;showModal('<h3><i class="fas fa-user-edit"></i> 修改教師</h3><div class="modal-section"><div class="form-row"><div class="form-group"><label>編號</label><input id="et-id" type="text" value="'+escapeHtml(t.id)+'"></div><div class="form-group"><label>用戶名</label><input id="et-username" type="text" value="'+escapeHtml(t.username)+'"></div></div><div class="form-group"><label>姓名</label><input id="et-name" type="text" value="'+escapeHtml(t.name)+'"></div></div><div class="modal-section"><h4>密碼</h4><div class="form-group" style="margin:0;"><div class="password-field"><input id="et-password" type="text" value="'+escapeHtml(t.password)+'"><button class="password-toggle" onclick="document.getElementById(\'et-password\').value=generatePassword()"><i class="fas fa-random"></i></button></div></div></div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-pri" onclick="saveEditTeacher(\''+t.id+'\')"><i class="fas fa-save"></i> 儲存</button></div>');}
+
+async function saveEditTeacher(oldId){
+  var nId=document.getElementById('et-id').value.trim(),nU=document.getElementById('et-username').value.trim(),nN=document.getElementById('et-name').value.trim(),nP=document.getElementById('et-password').value;
+  if(!nId||!nU||!nN||!nP){toast('不能為空','error');return;}
+  showLoading('正在更新...');var result=await apiCall('updateUser',{oldId:oldId,id:nId,username:nU,password:nP,name:nN,role:'teacher',class:''});
+  if(!result.success){hideLoading();toast(result.message,'error');return;}
+  await reloadData();hideLoading();closeModal();toast('已更新','success');render();
 }
 
-async function submitWork() {
-    var answer = document.getElementById('modal-answer').value.trim();
-    if (!answer) { showToast('請輸入你的答案', 'error'); return; }
+function deleteTeacher(tid){var t=USERS.teachers.find(function(t){return t.id===tid;});if(!t)return;confirmDialog('刪除教師','確定刪除「'+t.name+'」？',async function(){
+  showLoading('正在刪除...');await apiCall('deleteUser',{id:tid});await reloadData();hideLoading();toast('已刪除','success');render();
+});}
 
-    showLoading();
-    var result = await api('submitWork', {
-        assignmentId: currentModalAssignmentId,
-        username: currentUser.username,
-        answer: answer
-    });
-    hideLoading();
+// ==================== BATCH OPERATIONS ====================
+function showBatchActions(){var classes=getAllClasses();showModal('<h3><i class="fas fa-cogs" style="color:var(--sec)"></i> 批量操作</h3><div class="modal-section"><h4><i class="fas fa-key"></i> 批量重設密碼</h4><div class="form-row"><div class="form-group"><label>班別</label><select id="batch-class"><option value="all">所有</option>'+classes.map(function(c){return '<option value="'+c+'">'+c+'</option>';}).join('')+'</select></div><div class="form-group"><label>密碼</label><select id="batch-pwd-mode"><option value="default">統一 123456</option><option value="studentid">用學號</option><option value="random">隨機</option></select></div></div><button class="btn btn-warn btn-sm" onclick="doBatchResetPassword()"><i class="fas fa-key"></i> 執行</button></div><hr class="modal-divider"><div class="modal-section"><h4><i class="fas fa-exchange-alt"></i> 批量修改班別</h4><div class="form-row"><div class="form-group"><label>原班別</label><select id="batch-from-class">'+classes.map(function(c){return '<option value="'+c+'">'+c+'</option>';}).join('')+'</select></div><div class="form-group"><label>新班別</label><input id="batch-to-class" type="text" placeholder="5A"></div></div><button class="btn btn-pri btn-sm" onclick="doBatchChangeClass()"><i class="fas fa-exchange-alt"></i> 執行</button></div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">關閉</button></div>');}
 
-    if (result.success) {
-        showToast('功課已提交！👍');
-        closeModal();
-        await loadMyAssignments();
-    } else {
-        showToast(result.message, 'error');
-    }
+async function doBatchResetPassword(){
+  var cls=document.getElementById('batch-class').value;var mode=document.getElementById('batch-pwd-mode').value;
+  var targets=USERS.students.slice();if(cls!=='all')targets=targets.filter(function(s){return s.class===cls;});
+  if(targets.length===0){toast('無學生','error');return;}
+  var updates=targets.map(function(s){var np;if(mode==='default')np='123456';else if(mode==='studentid')np=s.id.toLowerCase();else np=generatePassword();return{id:s.id,password:np};});
+  showLoading('正在重設密碼...');await apiCall('batchUpdateUsers',{updates:updates});await reloadData();hideLoading();closeModal();toast('已重設 '+targets.length+' 位學生密碼','success');render();
 }
 
-// ==================== STUDENT: MY GRADES ====================
-async function loadMyGrades() {
-    showLoading();
-    var result = await api('getMySubmissions', { username: currentUser.username });
-    hideLoading();
+async function doBatchChangeClass(){
+  var from=document.getElementById('batch-from-class').value;var to=document.getElementById('batch-to-class').value.trim();
+  if(!to){toast('請輸入新班別','error');return;}
+  var targets=USERS.students.filter(function(s){return s.class===from;});if(targets.length===0){toast('無學生','error');return;}
+  var updates=targets.map(function(s){return{id:s.id,class:to};});
+  showLoading('正在修改班別...');await apiCall('batchUpdateUsers',{updates:updates});await reloadData();hideLoading();closeModal();toast('已轉移 '+targets.length+' 人至 '+to,'success');render();
+}
 
-    var el = document.getElementById('my-grades-content');
-    if (!result.success || result.submissions.length === 0) {
-        el.innerHTML = '<div class="bg-white rounded-xl shadow-md p-8 text-center text-gray-400">暫無提交紀錄</div>';
-        return;
-    }
+// ==================== QUESTION CRUD ====================
+function showAddQuestion(){showModal('<h3>新增題目</h3><div class="form-group"><label>課題</label><select id="nq-topic">'+TOPICS.map(function(t){return '<option value="'+t.id+'">'+t.name+'</option>';}).join('')+'</select></div><div class="form-group"><label>題型</label><select id="nq-type" onchange="toggleNQType()"><option value="mc">選擇題</option><option value="output">輸出題</option></select></div><div class="form-group"><label>分數</label><input id="nq-marks" type="number" value="2" min="1" max="10"></div><div class="form-group"><label>題目</label><textarea id="nq-question" rows="3"></textarea></div><div class="form-group"><label>程式碼</label><textarea id="nq-code" rows="4" style="font-family:monospace;"></textarea></div><div id="nq-mc-fields"><div class="form-group"><label>A</label><input id="nq-optA" type="text"></div><div class="form-group"><label>B</label><input id="nq-optB" type="text"></div><div class="form-group"><label>C</label><input id="nq-optC" type="text"></div><div class="form-group"><label>D</label><input id="nq-optD" type="text"></div><div class="form-group"><label>正確答案</label><select id="nq-answer"><option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option></select></div></div><div id="nq-output-fields" class="hidden"><div class="form-group"><label>正確輸出</label><textarea id="nq-output" rows="3" style="font-family:monospace;"></textarea></div></div><div class="form-group"><label>解釋</label><textarea id="nq-explain" rows="2"></textarea></div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-pri" onclick="addQuestion()">新增</button></div>');}
+function toggleNQType(){var t=document.getElementById('nq-type').value;document.getElementById('nq-mc-fields').classList.toggle('hidden',t!=='mc');document.getElementById('nq-output-fields').classList.toggle('hidden',t!=='output');}
 
-    var graded = result.submissions.filter(hasScore);
-    var avg = graded.length > 0 ? Math.round(graded.reduce(function(s,x){ return s + Number(x.score); }, 0) / graded.length) : null;
-    var highest = graded.length > 0 ? Math.max.apply(null, graded.map(function(x){ return Number(x.score); })) : null;
+async function addQuestion(){
+  var topicId=parseInt(document.getElementById('nq-topic').value),type=document.getElementById('nq-type').value,marks=parseInt(document.getElementById('nq-marks').value)||2,question=document.getElementById('nq-question').value.trim(),code=document.getElementById('nq-code').value,explanation=document.getElementById('nq-explain').value.trim();
+  if(!question){toast('請輸入題目','error');return;}
+  var q={id:nextQuestionId(),topicId:topicId,type:type,marks:marks,question:question,code:code,explanation:explanation};
+  if(type==='mc'){q.options=['nq-optA','nq-optB','nq-optC','nq-optD'].map(function(id){return document.getElementById(id).value.trim();});q.answer=parseInt(document.getElementById('nq-answer').value);if(q.options.some(function(o){return!o;})){toast('請填寫所有選項','error');return;}}
+  else{q.correctOutput=document.getElementById('nq-output').value;if(!q.correctOutput.trim()){toast('請填寫正確輸出','error');return;}}
+  showLoading('正在新增...');await apiCall('addQuestion',q);await reloadData();hideLoading();closeModal();toast('題目已新增','success');render();
+}
 
-    var html = '';
-    if (avg !== null) {
-        html += '<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">' +
-            '<div class="bg-white rounded-xl shadow-md p-5 text-center"><p class="text-sm text-gray-500">平均分數</p><p class="text-3xl font-bold text-indigo-600 mt-1">' + avg + '</p></div>' +
-            '<div class="bg-white rounded-xl shadow-md p-5 text-center"><p class="text-sm text-gray-500">最高分數</p><p class="text-3xl font-bold text-green-600 mt-1">' + highest + '</p></div>' +
-            '<div class="bg-white rounded-xl shadow-md p-5 text-center"><p class="text-sm text-gray-500">已批改</p><p class="text-3xl font-bold text-gray-800 mt-1">' + graded.length + '/' + result.submissions.length + '</p></div>' +
-            '</div>';
-    }
+function deleteQuestion(qid){confirmDialog('刪除題目','確定刪除？',async function(){
+  showLoading('正在刪除...');await apiCall('deleteQuestion',{id:qid});await reloadData();hideLoading();toast('已刪除','success');render();
+});}
 
-    html += '<div class="bg-white rounded-xl shadow-md overflow-hidden"><div class="overflow-x-auto">' +
-        '<table class="w-full"><thead class="bg-gray-50"><tr>' +
-        '<th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">功課</th>' +
-        '<th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">提交時間</th>' +
-        '<th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">分數</th>' +
-        '<th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">評語</th>' +
-        '</tr></thead><tbody class="divide-y divide-gray-100">' +
-        result.submissions.map(function(s) {
-            var scoreHtml = hasScore(s)
-                ? '<span class="inline-block px-3 py-1 rounded-full text-sm font-bold ' + (Number(s.score) >= 60 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700') + '">' + s.score + '</span>'
-                : '<span class="text-yellow-500 text-sm">待批改</span>';
-            return '<tr class="hover:bg-gray-50 transition">' +
-                '<td class="px-4 py-4 text-sm font-medium text-gray-800">' + escapeHtml(s.assignmentTitle) + '</td>' +
-                '<td class="px-4 py-4 text-sm text-gray-400">' + formatDate(s.submittedAt) + '</td>' +
-                '<td class="px-4 py-4 text-center">' + scoreHtml + '</td>' +
-                '<td class="px-4 py-4 text-sm text-gray-600">' + escapeHtml(s.feedback || '-') + '</td></tr>';
-        }).join('') +
-        '</tbody></table></div></div>';
+function showImportQuestions(){showModal('<h3>匯入題目 (JSON)</h3><div class="form-group"><label>貼上 JSON：</label><textarea id="import-json" rows="10" style="font-family:monospace;font-size:12px;"></textarea></div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-pri" onclick="doImportQuestions()">匯入</button></div>');}
 
-    el.innerHTML = html;
+async function doImportQuestions(){
+  try{var data=JSON.parse(document.getElementById('import-json').value);if(!Array.isArray(data))throw new Error('需要 JSON 陣列');
+  var qs=data.map(function(q,i){q.id=nextQuestionId()+i;return q;});
+  showLoading('正在匯入...');await apiCall('importQuestions',{questions:qs});await reloadData();hideLoading();closeModal();toast('匯入 '+qs.length+' 道題目','success');render();}catch(e){toast('JSON 格式錯誤','error');}
+}
+
+// ==================== GOOGLE FORM ====================
+async function saveGFormConfig(){
+  var config={formUrl:document.getElementById('gf-url').value.trim(),entryStudentName:document.getElementById('gf-name').value.trim(),entryStudentId:document.getElementById('gf-id').value.trim(),entryClass:document.getElementById('gf-class').value.trim(),entryAssignment:document.getElementById('gf-assign').value.trim(),entryScore:document.getElementById('gf-score').value.trim(),entryTotal:document.getElementById('gf-total').value.trim(),entryPercent:document.getElementById('gf-pct').value.trim(),entryDate:document.getElementById('gf-date').value.trim()};
+  showLoading('正在儲存...');await apiCall('saveConfig',{config:config});GFORM=config;hideLoading();toast('設定已儲存','success');
+}
+
+function submitToGoogleForm(result){if(!GFORM.formUrl)return;try{var d=new FormData();if(GFORM.entryStudentName)d.append(GFORM.entryStudentName,result.studentName);if(GFORM.entryStudentId)d.append(GFORM.entryStudentId,result.studentId);if(GFORM.entryClass)d.append(GFORM.entryClass,result.studentClass);if(GFORM.entryAssignment)d.append(GFORM.entryAssignment,result.quizName);if(GFORM.entryScore)d.append(GFORM.entryScore,result.score);if(GFORM.entryTotal)d.append(GFORM.entryTotal,result.total);if(GFORM.entryPercent)d.append(GFORM.entryPercent,result.percentage);if(GFORM.entryDate)d.append(GFORM.entryDate,result.date);fetch(GFORM.formUrl,{method:'POST',mode:'no-cors',body:d}).catch(function(){});}catch(e){}}
+
+function exportCSV(){var rows=[['學生編號','姓名','班別','功課','得分','總分','百分比','日期']];var filtered=RESULTS.filter(function(r){return!r.isPreview;});if(STATE.filterClass!=='all')filtered=filtered.filter(function(r){return r.studentClass===STATE.filterClass;});if(STATE.filterAssignment!=='all')filtered=filtered.filter(function(r){return r.assignmentId===STATE.filterAssignment;});filtered.forEach(function(r){rows.push([r.studentId,r.studentName,r.studentClass,r.quizName,r.score,r.total,r.percentage+'%',r.date]);});var csv='\uFEFF'+rows.map(function(r){return r.map(function(c){return '"'+c+'"';}).join(',');}).join('\n');var blob=new Blob([csv],{type:'text/csv;charset=utf-8'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='DSE_ICT_成績_'+formatDate()+'.csv';a.click();URL.revokeObjectURL(url);toast('CSV 已匯出','success');}
+
+// ==================== CODE RUNNER ====================
+function runCode(){var code=document.getElementById('code-editor').value;var outputEl=document.getElementById('code-output');var inputsEl=document.getElementById('code-inputs');var inputs=inputsEl?inputsEl.value.split('\n'):[];var inputIdx=0;outputEl.textContent='正在執行...';outputEl.className='code-output';if(typeof Sk==='undefined'){outputEl.textContent='⚠ Skulpt 未載入';outputEl.className='code-output error';return;}var output=[];Sk.configure({output:function(t){output.push(t);},read:function(x){if(Sk.builtinFiles===undefined||Sk.builtinFiles["files"][x]===undefined)throw "File not found: '"+x+"'";return Sk.builtinFiles["files"][x];},inputfun:function(){if(inputIdx<inputs.length)return inputs[inputIdx++];return '';},inputfunTakesPrompt:true,__future__:Sk.python3});Sk.misceval.asyncToPromise(function(){return Sk.importMainWithBody("<stdin>",false,code,true);}).then(function(){outputEl.textContent=output.join('')||'(無輸出)';outputEl.className='code-output';}).catch(function(err){outputEl.textContent='❌ '+err.toString();outputEl.className='code-output error';});}
+function clearCode(){document.getElementById('code-editor').value='';document.getElementById('code-output').textContent='等待執行...';document.getElementById('code-output').className='code-output';}
+
+// ==================== POST RENDER ====================
+function postRender(){
+  document.querySelectorAll('.main-content').forEach(function(el){el.addEventListener('click',function(){if(STATE.sidebarOpen){STATE.sidebarOpen=false;document.getElementById('sidebar')?.classList.remove('open');}});});
+  var lp=document.getElementById('login-pass');if(lp)lp.addEventListener('keypress',function(e){if(e.key==='Enter')doLogin();});
 }
 
 // ==================== STARTUP ====================
-(function() {
-    if (API_URL === 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE') {
-        document.getElementById('page-login').innerHTML =
-            '<div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-lg text-center">' +
-            '<div class="text-6xl mb-4">⚠️</div>' +
-            '<h1 class="text-2xl font-bold text-gray-800 mb-4">尚未設定 API 連接</h1>' +
-            '<p class="text-gray-600 mb-4">請先完成 Google Apps Script 設定，然後打開 HTML 檔案，找到這行程式碼：</p>' +
-            '<code class="bg-gray-100 px-4 py-2 rounded-lg text-sm block mb-4 overflow-x-auto">const API_URL = \'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE\';</code>' +
-            '<p class="text-gray-600">將它替換為你的 Apps Script 網頁應用程式 URL 即可。</p></div>';
-    }
-
-    var loginPw = document.getElementById('login-password');
-    if (loginPw) {
-        loginPw.addEventListener('keydown', function(e) { if (e.key === 'Enter') handleLogin(); });
-    }
-    var loginUser = document.getElementById('login-username');
-    if (loginUser) {
-        loginUser.addEventListener('keydown', function(e) { if (e.key === 'Enter') document.getElementById('login-password').focus(); });
-    }
+(function(){
+  if(API_URL==='YOUR_APPS_SCRIPT_WEB_APP_URL_HERE'){
+    document.getElementById('app').innerHTML='<div class="login-page"><div class="login-box" style="text-align:center;"><div class="logo">⚠️</div><h1 style="color:var(--danger);">尚未設定 API</h1><p style="margin:16px 0;color:var(--text-light);">請打開 HTML 檔案，找到這行：</p><code style="background:#f0f0f0;padding:8px 16px;border-radius:8px;display:block;margin:12px 0;font-size:12px;">const API_URL = \'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE\';</code><p style="color:var(--text-light);">替換為你的 Google Apps Script 網頁應用程式 URL。</p></div></div>';
+    return;
+  }
+  render();
 })();
 </script>
 </body>
