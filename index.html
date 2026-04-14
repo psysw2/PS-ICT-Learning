@@ -274,6 +274,9 @@ async function reloadData(){
     QUESTIONS=d.questions;
     ASSIGNMENTS=d.assignments;
     RESULTS=d.results;
+    if(d.topics && d.topics.length > 0){
+      TOPICS = d.topics;
+    }
     var c=d.config||{};
     GFORM={formUrl:c.formUrl||'',entryStudentName:c.entryStudentName||'',entryStudentId:c.entryStudentId||'',entryClass:c.entryClass||'',entryAssignment:c.entryAssignment||'',entryScore:c.entryScore||'',entryTotal:c.entryTotal||'',entryPercent:c.entryPercent||'',entryDate:c.entryDate||''};
   }
@@ -333,6 +336,7 @@ async function seedDefaultData(){
   await apiCall('seedData',{type:'users',users:DEFAULT_USERS});
   await apiCall('seedData',{type:'questions',questions:DEFAULT_QUESTIONS});
   await apiCall('seedData',{type:'assignments',assignments:DEFAULT_ASSIGNMENTS});
+  await apiCall('seedData',{type:'topics',topics:TOPICS.map(function(t){return{id:t.id,name:t.name,icon:t.icon,color:t.color,desc:t.desc};})});
   await reloadData();
   hideLoading();
 }
@@ -346,7 +350,7 @@ let ASSIGNMENTS=[];
 let RESULTS=[];
 let GFORM={formUrl:'',entryStudentName:'',entryStudentId:'',entryClass:'',entryAssignment:'',entryScore:'',entryTotal:'',entryPercent:'',entryDate:''};
 
-const TOPICS=[
+let TOPICS=[
   {id:1,name:'基本輸入輸出',icon:'fa-terminal',color:'#4361ee',desc:'print()、input() 函數的使用'},
   {id:2,name:'變數與資料類型',icon:'fa-box',color:'#7209b7',desc:'int, float, str, bool 及類型轉換'},
   {id:3,name:'運算子',icon:'fa-calculator',color:'#f72585',desc:'算術、比較、邏輯及賦值運算子'},
@@ -524,13 +528,38 @@ function renderMgAssignments(){
 }
 
 function renderMgQuestions(){
-  var html='<div class="card"><div class="card-header"><h3><i class="fas fa-question-circle"></i> 題庫管理 ('+QUESTIONS.length+' 題)</h3><div class="btn-group"><button class="btn btn-pri btn-sm" onclick="showAddQuestion()"><i class="fas fa-plus"></i> 新增</button><button class="btn btn-sec btn-sm" onclick="showImportQuestions()"><i class="fas fa-upload"></i> 匯入</button></div></div>';
+  var html='<div class="card"><div class="card-header"><h3><i class="fas fa-question-circle"></i> 題庫管理 ('+QUESTIONS.length+' 題)</h3><div class="btn-group"><button class="btn btn-pri btn-sm" onclick="showAddQuestion()"><i class="fas fa-plus"></i> 新增</button><button class="btn btn-sec btn-sm" onclick="showImportQuestions()"><i class="fas fa-upload"></i> 匯入</button><button class="btn btn-outline btn-sm" onclick="showManageTopics()"><i class="fas fa-tags"></i> 管理課題</button></div></div>';
   html+='<div class="tabs">';[{id:0,name:'全部'}].concat(TOPICS).forEach(function(t){var c=t.id===0?QUESTIONS.length:questionsByTopic(t.id).length;html+='<div class="tab '+((STATE.currentTopic||0)===t.id?'active':'')+'" onclick="STATE.currentTopic='+t.id+';render()">'+t.name+' <span class="tab-count">'+c+'</span></div>';});html+='</div>';
   var filtered=STATE.currentTopic?questionsByTopic(STATE.currentTopic):QUESTIONS;
   html+='<div class="table-wrap"><table><thead><tr><th>ID</th><th>課題</th><th>類型</th><th>題目</th><th>分數</th><th>操作</th></tr></thead><tbody>';filtered.forEach(function(q){var topic=TOPICS.find(function(t){return t.id===q.topicId;});html+='<tr><td>'+q.id+'</td><td>'+(topic?.name||'?')+'</td><td>'+(q.type==='mc'?'選擇題':'輸出題')+'</td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+escapeHtml(q.question.substring(0,50))+'</td><td>'+q.marks+'</td><td><button class="btn btn-danger btn-sm" onclick="deleteQuestion('+q.id+')"><i class="fas fa-trash"></i></button></td></tr>';});
   html+='</tbody></table></div></div>';return html;
 }
 
+function showManageTopics(){
+  var html='<h3><i class="fas fa-tags" style="color:var(--sec);"></i> 管理課題</h3>';
+  html+='<div style="margin-bottom:12px;"><button class="btn btn-success btn-sm" onclick="closeModal();setTimeout(showAddTopic,100);"><i class="fas fa-plus"></i> 新增課題</button></div>';
+  html+='<div class="table-wrap"><table><thead><tr><th>ID</th><th>圖示</th><th>名稱</th><th>描述</th><th>題數</th><th>操作</th></tr></thead><tbody>';
+  TOPICS.forEach(function(t){
+    var qc=questionsByTopic(t.id).length;
+    html+='<tr><td>'+t.id+'</td><td><i class="fas '+t.icon+'" style="color:'+t.color+';font-size:18px;"></i></td><td><strong>'+escapeHtml(t.name)+'</strong></td><td style="color:var(--text-light);font-size:13px;">'+escapeHtml(t.desc)+'</td><td>'+qc+'</td><td><button class="btn btn-danger btn-icon" onclick="deleteTopic('+t.id+')" '+(qc>0?'title="此課題仍有 '+qc+' 道題目"':'')+'><i class="fas fa-trash"></i></button></td></tr>';
+  });
+  html+='</tbody></table></div>';
+  html+='<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">關閉</button></div>';
+  showModal(html);
+}
+
+function deleteTopic(tid){
+  var t=TOPICS.find(function(t){return t.id===tid;});if(!t)return;
+  var qc=questionsByTopic(tid).length;
+  var msg=qc>0?'此課題仍有 '+qc+' 道題目，刪除課題後題目不會被刪除但會失去分類。確定刪除「'+t.name+'」？':'確定刪除「'+t.name+'」？';
+  confirmDialog('刪除課題',msg,async function(){
+    showLoading('正在刪除...');
+    await apiCall('deleteTopic',{id:tid});
+    await reloadData();
+    hideLoading();toast('已刪除','success');render();
+  });
+}
+  
 function renderAccountManagement(){
   var ia=isAdmin();if(!ia)STATE.accountTab='students';
   var html='';
@@ -719,8 +748,102 @@ async function doBatchChangeClass(){
   showLoading('正在修改班別...');await apiCall('batchUpdateUsers',{updates:updates});await reloadData();hideLoading();closeModal();toast('已轉移 '+targets.length+' 人至 '+to,'success');render();
 }
 
+// ==================== TOPIC CRUD ====================
+var _topicIcons = [
+  {val:'fa-terminal',label:'終端 fa-terminal'},
+  {val:'fa-box',label:'盒子 fa-box'},
+  {val:'fa-calculator',label:'計算器 fa-calculator'},
+  {val:'fa-code-branch',label:'分支 fa-code-branch'},
+  {val:'fa-sync-alt',label:'循環 fa-sync-alt'},
+  {val:'fa-cube',label:'方塊 fa-cube'},
+  {val:'fa-font',label:'文字 fa-font'},
+  {val:'fa-list-ol',label:'清單 fa-list-ol'},
+  {val:'fa-file-alt',label:'檔案 fa-file-alt'},
+  {val:'fa-project-diagram',label:'流程 fa-project-diagram'},
+  {val:'fa-book',label:'書本 fa-book'},
+  {val:'fa-database',label:'資料庫 fa-database'},
+  {val:'fa-cogs',label:'齒輪 fa-cogs'},
+  {val:'fa-puzzle-piece',label:'拼圖 fa-puzzle-piece'},
+  {val:'fa-network-wired',label:'網絡 fa-network-wired'},
+  {val:'fa-shield-alt',label:'安全 fa-shield-alt'},
+  {val:'fa-chart-bar',label:'圖表 fa-chart-bar'},
+  {val:'fa-brain',label:'大腦 fa-brain'},
+  {val:'fa-laptop-code',label:'編程 fa-laptop-code'},
+  {val:'fa-sitemap',label:'結構 fa-sitemap'}
+];
+
+var _topicColors = [
+  '#4361ee','#7209b7','#f72585','#4cc9f0','#06d6a0',
+  '#ffd166','#ef476f','#118ab2','#073b4c','#e63946',
+  '#8338ec','#ff6b6b','#1d3557','#2a9d8f','#e9c46a'
+];
+
+function showAddTopic(){
+  var nextId = TOPICS.length > 0 ? Math.max.apply(null, TOPICS.map(function(t){return t.id;})) + 1 : 1;
+  var iconOptions = _topicIcons.map(function(ic){return '<option value="'+ic.val+'">'+ic.label+'</option>';}).join('');
+  var colorOptions = _topicColors.map(function(c){return '<option value="'+c+'" style="background:'+c+';color:#fff;">'+c+'</option>';}).join('');
+  
+  // Close current modal, open new one
+  closeModal();
+  setTimeout(function(){
+    showModal(
+      '<h3><i class="fas fa-plus-circle" style="color:var(--success)"></i> 新增課題</h3>'+
+      '<div class="modal-section">'+
+        '<div class="form-group"><label>課題 ID（數字）</label><input id="nt-id" type="number" value="'+nextId+'" min="1"></div>'+
+        '<div class="form-group"><label>課題名稱</label><input id="nt-name" type="text" placeholder="例如：物件導向程式設計"></div>'+
+        '<div class="form-group"><label>描述</label><input id="nt-desc" type="text" placeholder="例如：class、物件、繼承"></div>'+
+        '<div class="form-row">'+
+          '<div class="form-group"><label>圖示</label><select id="nt-icon">'+iconOptions+'</select></div>'+
+          '<div class="form-group"><label>顏色</label><select id="nt-color">'+colorOptions+'</select></div>'+
+        '</div>'+
+        '<div id="nt-preview" style="margin-top:8px;padding:12px;border-radius:8px;border-left:4px solid #4361ee;background:#f8f9fa;">'+
+          '<span style="font-size:14px;"><i class="fas fa-terminal" style="color:#4361ee;"></i> <strong>預覽</strong></span>'+
+        '</div>'+
+      '</div>'+
+      '<div class="modal-actions">'+
+        '<button class="btn btn-outline" onclick="closeModal();setTimeout(showAddQuestion,100);">返回新增題目</button>'+
+        '<button class="btn btn-pri" onclick="doAddTopic()"><i class="fas fa-check"></i> 建立課題</button>'+
+      '</div>'
+    );
+    // Add preview update listeners
+    setTimeout(function(){
+      var nameEl=document.getElementById('nt-name');
+      var iconEl=document.getElementById('nt-icon');
+      var colorEl=document.getElementById('nt-color');
+      function updatePreview(){
+        var prev=document.getElementById('nt-preview');
+        if(!prev)return;
+        var n=nameEl.value||'預覽';var ic=iconEl.value;var c=colorEl.value;
+        prev.style.borderLeftColor=c;
+        prev.innerHTML='<span style="font-size:14px;"><i class="fas '+ic+'" style="color:'+c+';"></i> <strong>'+escapeHtml(n)+'</strong></span>';
+      }
+      if(nameEl)nameEl.addEventListener('input',updatePreview);
+      if(iconEl)iconEl.addEventListener('change',updatePreview);
+      if(colorEl)colorEl.addEventListener('change',updatePreview);
+    },50);
+  },100);
+}
+
+async function doAddTopic(){
+  var id=parseInt(document.getElementById('nt-id').value);
+  var name=document.getElementById('nt-name').value.trim();
+  var desc=document.getElementById('nt-desc').value.trim();
+  var icon=document.getElementById('nt-icon').value;
+  var color=document.getElementById('nt-color').value;
+  if(!name){toast('請輸入課題名稱','error');return;}
+  if(TOPICS.find(function(t){return t.id===id;})){toast('課題 ID 已存在，請更改','error');return;}
+  showLoading('正在建立課題...');
+  var result = await apiCall('addTopic',{id:id,name:name,icon:icon,color:color,desc:desc});
+  if(!result.success){hideLoading();toast(result.message||'建立失敗','error');return;}
+  await reloadData();
+  hideLoading();closeModal();
+  toast('課題「'+name+'」已建立！','success');
+  // Re-open add question modal
+  setTimeout(function(){showAddQuestion();},100);
+}
+  
 // ==================== QUESTION CRUD ====================
-function showAddQuestion(){showModal('<h3>新增題目</h3><div class="form-group"><label>課題</label><select id="nq-topic">'+TOPICS.map(function(t){return '<option value="'+t.id+'">'+t.name+'</option>';}).join('')+'</select></div><div class="form-group"><label>題型</label><select id="nq-type" onchange="toggleNQType()"><option value="mc">選擇題</option><option value="output">輸出題</option></select></div><div class="form-group"><label>分數</label><input id="nq-marks" type="number" value="2" min="1" max="10"></div><div class="form-group"><label>題目</label><textarea id="nq-question" rows="3"></textarea></div><div class="form-group"><label>程式碼</label><textarea id="nq-code" rows="4" style="font-family:monospace;"></textarea></div><div id="nq-mc-fields"><div class="form-group"><label>A</label><input id="nq-optA" type="text"></div><div class="form-group"><label>B</label><input id="nq-optB" type="text"></div><div class="form-group"><label>C</label><input id="nq-optC" type="text"></div><div class="form-group"><label>D</label><input id="nq-optD" type="text"></div><div class="form-group"><label>正確答案</label><select id="nq-answer"><option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option></select></div></div><div id="nq-output-fields" class="hidden"><div class="form-group"><label>正確輸出</label><textarea id="nq-output" rows="3" style="font-family:monospace;"></textarea></div></div><div class="form-group"><label>解釋</label><textarea id="nq-explain" rows="2"></textarea></div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-pri" onclick="addQuestion()">新增</button></div>');}
+function showAddQuestion(){showModal('<h3>新增題目</h3><div class="form-group"><label>課題</label><div style="display:flex;gap:8px;"><select id="nq-topic" style="flex:1;">'+TOPICS.map(function(t){return '<option value="'+t.id+'">'+t.name+'</option>';}).join('')+'</select><button class="btn btn-success btn-sm" onclick="showAddTopic()" type="button"><i class="fas fa-plus"></i> 新增課題</button></div></div><div class="form-group"><label>題型</label><select id="nq-type" onchange="toggleNQType()"><option value="mc">選擇題</option><option value="output">輸出題</option></select></div><div class="form-group"><label>分數</label><input id="nq-marks" type="number" value="2" min="1" max="10"></div><div class="form-group"><label>題目</label><textarea id="nq-question" rows="3"></textarea></div><div class="form-group"><label>程式碼</label><textarea id="nq-code" rows="4" style="font-family:monospace;"></textarea></div><div id="nq-mc-fields"><div class="form-group"><label>A</label><input id="nq-optA" type="text"></div><div class="form-group"><label>B</label><input id="nq-optB" type="text"></div><div class="form-group"><label>C</label><input id="nq-optC" type="text"></div><div class="form-group"><label>D</label><input id="nq-optD" type="text"></div><div class="form-group"><label>正確答案</label><select id="nq-answer"><option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option></select></div></div><div id="nq-output-fields" class="hidden"><div class="form-group"><label>正確輸出</label><textarea id="nq-output" rows="3" style="font-family:monospace;"></textarea></div></div><div class="form-group"><label>解釋</label><textarea id="nq-explain" rows="2"></textarea></div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-pri" onclick="addQuestion()">新增</button></div>');}
 function toggleNQType(){var t=document.getElementById('nq-type').value;document.getElementById('nq-mc-fields').classList.toggle('hidden',t!=='mc');document.getElementById('nq-output-fields').classList.toggle('hidden',t!=='output');}
 
 async function addQuestion(){
