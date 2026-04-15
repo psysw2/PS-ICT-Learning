@@ -419,7 +419,7 @@ function onPickerRemoveClass(pid,cls){var ps=_pickerState[pid];if(ps.selected.in
 function refreshPicker(pid){var ps=_pickerState[pid];var el=document.getElementById(pid);if(!el)return;var w=el.parentElement;if(!w)return;w.innerHTML=buildStudentPickerHTML(pid,ps.selected,ps.filterClass,ps.search);}
 
 // ==================== RENDER ====================
-function render(){var app=document.getElementById('app');if(!STATE.currentUser)app.innerHTML=renderLogin();else if(isManagement()&&STATE.previewMode)app.innerHTML=renderPreviewBar()+renderStudentLayout();else if(isManagement())app.innerHTML=renderManagementLayout();else app.innerHTML=renderStudentLayout();postRender();}
+function render(){var app=document.getElementById('app');if(!STATE.currentUser)app.innerHTML=renderLogin();else if(isManagement()&&STATE.previewMode)app.innerHTML=renderPreviewBar()+renderStudentLayout();else if(isManagement())app.innerHTML=renderManagementLayout();else app.innerHTML=renderStudentLayout();postRender();setTimeout(function(){if(document.getElementById('code-editor'))initCodeEditor();},50);}
 
 function renderLogin(){
   return '<div class="login-page"><div class="login-box"><div class="logo"><i class="fas fa-laptop-code"></i></div><h1>DSE ICT Python 學習系統</h1><p class="subtitle">香港中學文憑試 資訊及通訊科技科</p><div class="form-group"><label>身份</label><select id="login-role"><option value="student">學生</option><option value="teacher">老師</option><option value="admin">管理員</option></select></div><div class="form-group"><label>用戶名稱</label><input id="login-user" type="text" placeholder="請輸入用戶名稱"></div><div class="form-group"><label>密碼</label><input id="login-pass" type="password" placeholder="請輸入密碼"></div><button class="btn btn-pri btn-full" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> 登入</button></div></div>';
@@ -492,7 +492,39 @@ function renderQuizResultSummary(){
 function renderQuizResult(){var r=RESULTS.find(function(r){return r.id===STATE.selectedResult;});if(!r)return '<p>找不到紀錄</p>';STATE.currentQuiz={name:r.quizName,questions:r.questions};STATE.quizAnswers=r.answers;STATE.quizSubmitted=true;return '<div style="margin-bottom:16px;"><button class="btn btn-outline btn-sm" onclick="navigate(\'student-history\')"><i class="fas fa-arrow-left"></i> 返回</button></div>'+renderQuiz();}
 
 function renderCoding(){
-  return '<div class="card"><h3><i class="fas fa-code"></i> Python 編程練習場</h3><div class="form-group"><label>輸入值（每行一個）：</label><textarea id="code-inputs" class="answer-input" rows="2" placeholder="每行一個輸入值"></textarea></div><div class="code-editor-wrapper"><textarea id="code-editor" class="code-editor" rows="14" spellcheck="false">print("Hello, World!")\n\nfor i in range(1, 6):\n    print(f"{i} x {i} = {i*i}")</textarea></div><div style="margin-top:12px;display:flex;gap:8px;"><button class="btn btn-success" onclick="runCode()"><i class="fas fa-play"></i> 執行</button><button class="btn btn-outline" onclick="clearCode()"><i class="fas fa-eraser"></i> 清除</button></div><div style="margin-top:16px;"><label style="font-weight:600;">輸出：</label><div id="code-output" class="code-output">等待執行...</div></div></div>';
+  return '<div class="card"><h3><i class="fas fa-code"></i> Python 編程練習場</h3><div class="form-group"><label>輸入值（每行一個）：</label><textarea id="code-inputs" class="answer-input" rows="2" placeholder="每行一個輸入值"></textarea></div><div class="code-editor-wrapper" style="position:relative;display:flex;"><div id="line-numbers" style="width:40px;padding:12px 8px 12px 0;text-align:right;font-family:monospace;font-size:14px;line-height:1.5;color:#888;background:#1a1a2e;border-radius:12px 0 0 12px;user-select:none;overflow:hidden;"></div><textarea id="code-editor" class="code-editor" rows="14" spellcheck="false" style="border-radius:0 12px 12px 0;flex:1;">print("Hello, World!")\n\nfor i in range(1, 6):\n    print(f"{i} x {i} = {i*i}")</textarea></div><div style="margin-top:12px;display:flex;gap:8px;"><button class="btn btn-success" onclick="runCode()"><i class="fas fa-play"></i> 執行</button><button class="btn btn-outline" onclick="clearCode()"><i class="fas fa-eraser"></i> 清除</button></div><div style="margin-top:16px;"><label style="font-weight:600;">輸出：</label><div id="code-output" class="code-output">等待執行...</div></div></div>';
+}
+
+function updateLineNumbers(){
+  var editor=document.getElementById('code-editor');
+  var lineNums=document.getElementById('line-numbers');
+  if(!editor||!lineNums)return;
+  var lines=editor.value.split('\n').length;
+  var html='';
+  for(var i=1;i<=lines;i++){html+='<div style="line-height:1.5;font-size:14px;">'+i+'</div>';}
+  lineNums.innerHTML=html;
+  lineNums.scrollTop=editor.scrollTop;
+}
+
+function initCodeEditor(){
+  var editor=document.getElementById('code-editor');
+  if(!editor)return;
+  editor.addEventListener('input',updateLineNumbers);
+  editor.addEventListener('scroll',function(){
+    var lineNums=document.getElementById('line-numbers');
+    if(lineNums)lineNums.scrollTop=editor.scrollTop;
+  });
+  editor.addEventListener('keydown',function(e){
+    if(e.key==='Tab'){
+      e.preventDefault();
+      var start=this.selectionStart;
+      var end=this.selectionEnd;
+      this.value=this.value.substring(0,start)+'    '+this.value.substring(end);
+      this.selectionStart=this.selectionEnd=start+4;
+      updateLineNumbers();
+    }
+  });
+  updateLineNumbers();
 }
 
 // ==================== MANAGEMENT LAYOUT ====================
