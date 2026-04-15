@@ -627,10 +627,10 @@ async function doLogin(){
   var result=await apiCall('login',{username:username,password:password,role:role});
   if(!result.success){hideLoading();toast(result.message||'登入失敗','error');return;}
   STATE.currentUser=result.user;
+  localStorage.setItem('savedUser',JSON.stringify(result.user));
   showLoading('正在載入資料...');
   var dataResult=await reloadData();
   if(!dataResult.success){hideLoading();toast('無法載入資料','error');return;}
-  // Auto-seed default data if empty
   if(USERS.students.length===0&&QUESTIONS.length===0){
     showLoading('首次使用，正在初始化預設資料...');
     await seedDefaultData();
@@ -640,7 +640,11 @@ async function doLogin(){
   hideLoading();toast('歡迎回來，'+result.user.name+'！','success');render();
 }
 
-function doLogout(){STATE.currentUser=null;STATE.view='login';STATE.sidebarOpen=false;STATE.previewMode=false;STATE.previewStudentId=null;render();}
+function doLogout(){
+  STATE.currentUser=null;STATE.view='login';STATE.sidebarOpen=false;STATE.previewMode=false;STATE.previewStudentId=null;
+  localStorage.removeItem('savedUser');
+  render();
+}
 function navigate(view){STATE.view=view;STATE.sidebarOpen=false;render();window.scrollTo(0,0);}
 function toggleSidebar(){STATE.sidebarOpen=!STATE.sidebarOpen;document.getElementById('sidebar')?.classList.toggle('open',STATE.sidebarOpen);}
 function enterPreview(){if(USERS.students.length===0){toast('沒有學生','error');return;}STATE.previewMode=true;STATE.previewStudentId=STATE.previewStudentId||USERS.students[0].id;STATE.view='student-dashboard';STATE.sidebarOpen=false;STATE.quizAnswers={};STATE.quizSubmitted=false;STATE.currentQuiz=null;render();}
@@ -934,7 +938,22 @@ function postRender(){
     document.getElementById('app').innerHTML='<div class="login-page"><div class="login-box" style="text-align:center;"><div class="logo">⚠️</div><h1 style="color:var(--danger);">尚未設定 API</h1><p style="margin:16px 0;color:var(--text-light);">請打開 HTML 檔案，找到這行：</p><code style="background:#f0f0f0;padding:8px 16px;border-radius:8px;display:block;margin:12px 0;font-size:12px;">const API_URL = \'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE\';</code><p style="color:var(--text-light);">替換為你的 Google Apps Script 網頁應用程式 URL。</p></div></div>';
     return;
   }
-  render();
+  var saved=localStorage.getItem('savedUser');
+  if(saved){
+    try{
+      var user=JSON.parse(saved);
+      STATE.currentUser=user;
+      STATE.view=(user.role==='student')?'student-dashboard':'management-dashboard';
+      render();
+      showLoading('正在載入資料...');
+      reloadData().then(function(){
+        hideLoading();render();
+      }).catch(function(){
+        hideLoading();toast('載入資料失敗','error');
+        STATE.currentUser=null;localStorage.removeItem('savedUser');render();
+      });
+    }catch(e){localStorage.removeItem('savedUser');render();}
+  }else{render();}
 })();
 </script>
 </body>
