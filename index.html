@@ -864,7 +864,7 @@ function showImportQuestions(){showModal('<h3>匯入題目 (JSON)</h3><div class
 async function doImportQuestions(){
   try{var data=JSON.parse(document.getElementById('import-json').value);if(!Array.isArray(data))throw new Error('需要 JSON 陣列');
   var qs=data.map(function(q,i){q.id=nextQuestionId()+i;return q;});
-  showLoading('正在匯入...');await apiCall('importQuestions',{questions:qs});await reloadData();hideLoading();closeModal();toast('匯入 '+qs.length+' 道題目','success');render();}catch(e){toast('JSON 格式錯誤','error');}
+  showLoading('正在匯入...');await apiCall('importQuestions',{questions:qs});await reloadData();hideLoading();closeModal();toast('匯入 '+qs.length+' 道題目','success');render();}}catch(e){toast('匯入失敗：'+e.message,'error');}
 }
 
 // ==================== GOOGLE FORM ====================
