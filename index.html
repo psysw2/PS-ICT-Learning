@@ -631,6 +631,7 @@ async function doSubmitQuiz(){
   var result={id:'R'+Date.now(),studentId:eu.id,studentName:eu.name,studentClass:eu.class,assignmentId:quiz.assignmentId||'',topicId:quiz.topicId||'',quizName:quiz.name,questions:qs,answers:STATE.quizAnswers,score:score,total:total,percentage:pct,date:formatDate(),isPreview:ip};
   
   showLoading('正在提交，請稍候...');
+  await new Promise(function(r){setTimeout(r,100);});
   try{
     await apiCall('addResult',result);
     RESULTS.push(result);
