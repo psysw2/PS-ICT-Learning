@@ -629,11 +629,19 @@ async function doSubmitQuiz(){
   var score=0,total=0;qs.forEach(function(q){total+=q.marks;if(q.type==='mc'&&STATE.quizAnswers[q.id]===q.answer)score+=q.marks;else if(q.type==='output'&&normalizeOutput(STATE.quizAnswers[q.id])===normalizeOutput(q.correctOutput))score+=q.marks;});
   var pct=total>0?Math.round(score/total*100):0;var eu=getEffectiveUser();var ip=isPreviewMode();
   var result={id:'R'+Date.now(),studentId:eu.id,studentName:eu.name,studentClass:eu.class,assignmentId:quiz.assignmentId||'',topicId:quiz.topicId||'',quizName:quiz.name,questions:qs,answers:STATE.quizAnswers,score:score,total:total,percentage:pct,date:formatDate(),isPreview:ip};
-  // Save to API
-  await apiCall('addResult',result);
-  RESULTS.push(result);
-  if(!ip)submitToGoogleForm(result);
-  toast('已提交！得分：'+score+'/'+total+' ('+pct+'%)','success');render();window.scrollTo(0,0);
+  
+  showLoading('正在提交，請稍候...');
+  try{
+    await apiCall('addResult',result);
+    RESULTS.push(result);
+    if(!ip)submitToGoogleForm(result);
+    hideLoading();
+    toast('已提交！得分：'+score+'/'+total+' ('+pct+'%)','success');render();window.scrollTo(0,0);
+  }catch(e){
+    hideLoading();
+    toast('提交失敗，請重試：'+e.message,'error');
+    STATE.quizSubmitted=false;
+  }
 }
 
 // ==================== ASSIGNMENT CRUD ====================
