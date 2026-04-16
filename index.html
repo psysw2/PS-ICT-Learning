@@ -510,7 +510,30 @@ function renderQuiz(){
   var html='<div class="quiz-container"><div class="quiz-header"><h3>'+escapeHtml(quiz.name)+'</h3><span style="font-size:14px;color:var(--text-light)">'+answered+'/'+total+' 已作答</span></div><div class="quiz-progress"><div class="quiz-progress-bar" style="width:'+progress+'%"></div></div>';
   qs.forEach(function(q,idx){var ua=STATE.quizAnswers[q.id];html+='<div class="question-card" id="q-'+q.id+'"><span class="question-num">第 '+(idx+1)+' 題（'+q.marks+' 分）</span><div class="question-text">'+escapeHtml(q.question)+'</div>';if(q.code)html+='<div class="code-block">'+escapeHtml(q.code)+'</div>';
     html+='<div style="margin:4px 0;padding:6px 10px;background:#fffde7;border:1px dashed #fbc02d;border-radius:4px;font-size:11px;color:#555;">🔍 image=[' + escapeHtml(String(q.image||'')) + ']</div>';
-    if(q.image){var _did=extractDriveId(q.image);if(_did){html+='<div style="margin:12px 0;"><img data-drive-id="'+_did+'" class="question-image" style="min-height:60px;background:#f5f5f5;" alt="載入圖片中..."></div>';}else{html+='<div style="margin:12px 0;"><img src="'+escapeHtml(q.image)+'" class="question-image" onerror="this.style.display=\'none\'" alt="題目圖片"></div>';}}
+    if(q.image){
+  var _did = extractDriveId(q.image);
+  if(_did){
+    // 直接用 Google Drive 縮圖 URL，不需要 API
+    var directUrl = 'https://lh3.googleusercontent.com/d/' + _did + '=w800';
+    html += '<div style="margin:12px 0;">'
+      + '<img src="' + directUrl + '" '
+      + 'class="question-image" '
+      + 'style="max-width:100%;border-radius:8px;border:1px solid #e0e0e0;cursor:pointer;" '
+      + 'onerror="this.onerror=null;this.src=\'https://drive.google.com/thumbnail?id=' + _did + '&sz=w800\';" '
+      + 'onclick="window.open(\'https://drive.google.com/file/d/' + _did + '/view\',\'_blank\')" '
+      + 'alt="題目圖片">'
+      + '</div>';
+  } else {
+    // 普通 URL（Imgur 等）
+    html += '<div style="margin:12px 0;">'
+      + '<img src="' + escapeHtml(q.image) + '" '
+      + 'class="question-image" '
+      + 'style="max-width:100%;border-radius:8px;border:1px solid #e0e0e0;" '
+      + 'onerror="this.style.display=\'none\'" '
+      + 'alt="題目圖片">'
+      + '</div>';
+  }
+}
     if(q.type==='mc'){html+='<div class="options">';var letters='ABCD';q.options.forEach(function(opt,oi){var cls='';if(STATE.quizSubmitted){if(oi===q.answer)cls='correct';else if(ua!==undefined&&ua===oi)cls='wrong';}else if(ua===oi)cls='selected';html+='<div class="option '+cls+'" onclick="'+(STATE.quizSubmitted?'':'selectAnswer('+q.id+','+oi+')')+'"><span class="option-letter">'+letters[oi]+'</span><span>'+escapeHtml(opt)+'</span></div>';});html+='</div>';}
     else if(q.type==='output'){html+='<div class="form-group" style="margin-top:8px;"><label>請輸入程式的輸出結果：</label><textarea class="answer-input" rows="3" id="ans-'+q.id+'" '+(STATE.quizSubmitted?'disabled':'')+' oninput="textAnswer('+q.id+',this.value)" placeholder="在此輸入...">'+(ua!==undefined?escapeHtml(ua):'')+'</textarea></div>';if(STATE.quizSubmitted){var ok=normalizeOutput(ua)===normalizeOutput(q.correctOutput);html+='<div style="margin-top:8px;"><span style="color:'+(ok?'var(--success)':'var(--danger)')+';font-weight:600">'+(ok?'✓ 正確':'✗ 錯誤')+'</span><div class="code-block">'+escapeHtml(q.correctOutput)+'</div></div>';}}
     if(STATE.quizSubmitted&&q.explanation)html+='<div class="explanation"><strong>解釋：</strong>'+escapeHtml(q.explanation)+'</div>';html+='</div>';});
