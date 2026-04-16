@@ -510,21 +510,23 @@ function renderQuiz(){
   var html='<div class="quiz-container"><div class="quiz-header"><h3>'+escapeHtml(quiz.name)+'</h3><span style="font-size:14px;color:var(--text-light)">'+answered+'/'+total+' 已作答</span></div><div class="quiz-progress"><div class="quiz-progress-bar" style="width:'+progress+'%"></div></div>';
   qs.forEach(function(q,idx){var ua=STATE.quizAnswers[q.id];html+='<div class="question-card" id="q-'+q.id+'"><span class="question-num">第 '+(idx+1)+' 題（'+q.marks+' 分）</span><div class="question-text">'+escapeHtml(q.question)+'</div>';if(q.code)html+='<div class="code-block">'+escapeHtml(q.code)+'</div>';
     html+='<div style="margin:4px 0;padding:6px 10px;background:#fffde7;border:1px dashed #fbc02d;border-radius:4px;font-size:11px;color:#555;">🔍 image=[' + escapeHtml(String(q.image||'')) + ']</div>';
-    if(q.image){
+  if(q.image && q.image !== '[]' && q.image.trim() !== ''){
   var _did = extractDriveId(q.image);
   if(_did){
-    // 直接用 Google Drive 縮圖 URL，不需要 API
     var directUrl = 'https://lh3.googleusercontent.com/d/' + _did + '=w800';
+    var driveLink = 'https://drive.google.com/file/d/' + _did + '/view';
     html += '<div style="margin:12px 0;">'
       + '<img src="' + directUrl + '" '
       + 'class="question-image" '
       + 'style="max-width:100%;border-radius:8px;border:1px solid #e0e0e0;cursor:pointer;" '
-      + 'onerror="this.onerror=null;this.src=\'https://drive.google.com/thumbnail?id=' + _did + '&sz=w800\';" '
-      + 'onclick="window.open(\'https://drive.google.com/file/d/' + _did + '/view\',\'_blank\')" '
+      + 'onclick="window.open(\'' + driveLink + '\',\'_blank\')" '
+      + 'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'block\';" '
       + 'alt="題目圖片">'
+      + '<a href="' + driveLink + '" target="_blank" '
+      + 'style="display:none;margin:8px 0;padding:8px 14px;background:#fff3e0;border:1px solid #ffcc80;border-radius:6px;color:#e65100;text-decoration:none;font-size:14px;display:inline-block;display:none;">'
+      + '🔗 圖片載入失敗，點此開啟圖片</a>'
       + '</div>';
   } else {
-    // 普通 URL（Imgur 等）
     html += '<div style="margin:12px 0;">'
       + '<img src="' + escapeHtml(q.image) + '" '
       + 'class="question-image" '
