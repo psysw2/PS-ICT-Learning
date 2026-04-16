@@ -372,21 +372,36 @@ function getScoreClass(p){return p>=70?'high':p>=40?'mid':'low';}
 function getScoreColorClass(p){return p>=70?'score-high':p>=40?'score-mid':'score-low';}
 function formatDate(){return new Date().toISOString().split('T')[0];}
 function escapeHtml(s){if(s===undefined||s===null)return '';var d=document.createElement('div');d.textContent=String(s);return d.innerHTML;}
-function toDirectImageUrl(url) {
-    if (!url) return url;
-    var id = null;
-    // 格式: drive.google.com/file/d/FILE_ID/...
-    var m1 = url.match(/drive\.google\.com\/file\/d\/([^\/\?]+)/);
-    if (m1) id = m1[1];
-    // 格式: drive.google.com/open?id=FILE_ID
-    var m2 = url.match(/drive\.google\.com\/open\?id=([^&]+)/);
-    if (m2) id = m2[1];
-    // 格式: drive.google.com/uc?...id=FILE_ID
-    var m3 = url.match(/drive\.google\.com\/uc\?.*id=([^&]+)/);
-    if (m3) id = m3[1];
-    // 用 thumbnail API，sz=w1000 控制寬度
-    if (id) return 'https://drive.google.com/thumbnail?id=' + id + '&sz=w1000';
-    return url;
+function extractDriveId(url) {
+    if (!url) return null;
+    var m = url.match(/drive\.google\.com\/file\/d\/([^\/\?]+)/);
+    if (m) return m[1];
+    m = url.match(/drive\.google\.com\/open\?id=([^&]+)/);
+    if (m) return m[1];
+    m = url.match(/drive\.google\.com\/uc\?.*id=([^&]+)/);
+    if (m) return m[1];
+    return null;
+}
+
+var _imgCache = {};
+function loadDriveImages() {
+    document.querySelectorAll('img[data-drive-id]').forEach(function(img) {
+        var id = img.getAttribute('data-drive-id');
+        if (_imgCache[id]) { img.src = _imgCache[id]; return; }
+        if (_imgCache['_l_' + id]) return;
+        _imgCache['_l_' + id] = true;
+        apiCall('getImage', {fileId: id}).then(function(r) {
+            delete _imgCache['_l_' + id];
+            if (r.success && r.data) {
+                _imgCache[id] = r.data;
+                document.querySelectorAll('img[data-drive-id="' + id + '"]').forEach(function(el) { el.src = r.data; el.alt = '題目圖片'; });
+            } else {
+                document.querySelectorAll('img[data-drive-id="' + id + '"]').forEach(function(el) {
+                    el.parentElement.innerHTML = '<div style="padding:10px;background:#fff3f3;border:1px solid #ffcdd2;border-radius:8px;color:#c62828;font-size:13px;"><i class="fas fa-exclamation-triangle"></i> 圖片載入失敗，請確認檔案存在</div>';
+                });
+            }
+        });
+    });
 }
 function questionsByTopic(tid){return QUESTIONS.filter(function(q){return q.topicId===tid;});}
 function questionById(id){return QUESTIONS.find(function(q){return q.id===id;});}
@@ -494,7 +509,7 @@ function renderQuiz(){
   var quiz=STATE.currentQuiz;if(!quiz)return '<p>無測驗資料</p>';var qs=quiz.questions;var total=qs.length;var answered=Object.keys(STATE.quizAnswers).length;var progress=STATE.quizSubmitted?100:Math.round(answered/total*100);
   var html='<div class="quiz-container"><div class="quiz-header"><h3>'+escapeHtml(quiz.name)+'</h3><span style="font-size:14px;color:var(--text-light)">'+answered+'/'+total+' 已作答</span></div><div class="quiz-progress"><div class="quiz-progress-bar" style="width:'+progress+'%"></div></div>';
   qs.forEach(function(q,idx){var ua=STATE.quizAnswers[q.id];html+='<div class="question-card" id="q-'+q.id+'"><span class="question-num">第 '+(idx+1)+' 題（'+q.marks+' 分）</span><div class="question-text">'+escapeHtml(q.question)+'</div>';if(q.code)html+='<div class="code-block">'+escapeHtml(q.code)+'</div>';
-    if(q.image)html+='<div style="margin:12px 0;"><img src="'+escapeHtml(toDirectImageUrl(q.image))+'" class="question-image" onerror="this.style.display=\'none\'" alt="題目圖片"></div>';
+    if(q.image){var _did=extractDriveId(q.image);if(_did){html+='<div style="margin:12px 0;"><img data-drive-id="'+_did+'" class="question-image" style="min-height:60px;background:#f5f5f5;" alt="載入圖片中..."></div>';}else{html+='<div style="margin:12px 0;"><img src="'+escapeHtml(q.image)+'" class="question-image" onerror="this.style.display=\'none\'" alt="題目圖片"></div>';}}
     if(q.type==='mc'){html+='<div class="options">';var letters='ABCD';q.options.forEach(function(opt,oi){var cls='';if(STATE.quizSubmitted){if(oi===q.answer)cls='correct';else if(ua!==undefined&&ua===oi)cls='wrong';}else if(ua===oi)cls='selected';html+='<div class="option '+cls+'" onclick="'+(STATE.quizSubmitted?'':'selectAnswer('+q.id+','+oi+')')+'"><span class="option-letter">'+letters[oi]+'</span><span>'+escapeHtml(opt)+'</span></div>';});html+='</div>';}
     else if(q.type==='output'){html+='<div class="form-group" style="margin-top:8px;"><label>請輸入程式的輸出結果：</label><textarea class="answer-input" rows="3" id="ans-'+q.id+'" '+(STATE.quizSubmitted?'disabled':'')+' oninput="textAnswer('+q.id+',this.value)" placeholder="在此輸入...">'+(ua!==undefined?escapeHtml(ua):'')+'</textarea></div>';if(STATE.quizSubmitted){var ok=normalizeOutput(ua)===normalizeOutput(q.correctOutput);html+='<div style="margin-top:8px;"><span style="color:'+(ok?'var(--success)':'var(--danger)')+';font-weight:600">'+(ok?'✓ 正確':'✗ 錯誤')+'</span><div class="code-block">'+escapeHtml(q.correctOutput)+'</div></div>';}}
     if(STATE.quizSubmitted&&q.explanation)html+='<div class="explanation"><strong>解釋：</strong>'+escapeHtml(q.explanation)+'</div>';html+='</div>';});
@@ -1010,6 +1025,7 @@ function clearCode(){document.getElementById('code-editor').value='';document.ge
 function postRender(){
   document.querySelectorAll('.main-content').forEach(function(el){el.addEventListener('click',function(){if(STATE.sidebarOpen){STATE.sidebarOpen=false;document.getElementById('sidebar')?.classList.remove('open');}});});
   var lp=document.getElementById('login-pass');if(lp)lp.addEventListener('keypress',function(e){if(e.key==='Enter')doLogin();});
+  setTimeout(loadDriveImages, 100);
 }
 
 // ==================== STARTUP ====================
