@@ -374,16 +374,19 @@ function formatDate(){return new Date().toISOString().split('T')[0];}
 function escapeHtml(s){if(s===undefined||s===null)return '';var d=document.createElement('div');d.textContent=String(s);return d.innerHTML;}
 function toDirectImageUrl(url) {
     if (!url) return url;
-    // 格式: https://drive.google.com/file/d/FILE_ID/view?usp=sharing
-    var match = url.match(/drive\.google\.com\/file\/d\/([^\/]+)/);
-    if (match) return 'https://lh3.googleusercontent.com/d/' + match[1];
-    // 格式: https://drive.google.com/open?id=FILE_ID
-    var match2 = url.match(/drive\.google\.com\/open\?id=([^&]+)/);
-    if (match2) return 'https://lh3.googleusercontent.com/d/' + match2[1];
-    // 如果已經是 uc?export 格式也轉換
-    var match3 = url.match(/drive\.google\.com\/uc\?.*id=([^&]+)/);
-    if (match3) return 'https://lh3.googleusercontent.com/d/' + match3[1];
-    return url; // 非 Google Drive 連結，原樣返回
+    var id = null;
+    // 格式: drive.google.com/file/d/FILE_ID/...
+    var m1 = url.match(/drive\.google\.com\/file\/d\/([^\/\?]+)/);
+    if (m1) id = m1[1];
+    // 格式: drive.google.com/open?id=FILE_ID
+    var m2 = url.match(/drive\.google\.com\/open\?id=([^&]+)/);
+    if (m2) id = m2[1];
+    // 格式: drive.google.com/uc?...id=FILE_ID
+    var m3 = url.match(/drive\.google\.com\/uc\?.*id=([^&]+)/);
+    if (m3) id = m3[1];
+    // 用 thumbnail API，sz=w1000 控制寬度
+    if (id) return 'https://drive.google.com/thumbnail?id=' + id + '&sz=w1000';
+    return url;
 }
 function questionsByTopic(tid){return QUESTIONS.filter(function(q){return q.topicId===tid;});}
 function questionById(id){return QUESTIONS.find(function(q){return q.id===id;});}
