@@ -225,6 +225,7 @@ tr:hover td{background:#f8f9fa;}
 .login-box{padding:24px;}
 }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 <div id="app"></div>
@@ -669,7 +670,7 @@ function renderTeacherAccountsTab(){
 
 function renderStudentAccountsTab(){
   var classes=getAllClasses();var q=STATE.searchQuery||'';var filtered=USERS.students.slice();if(STATE.filterClass!=='all')filtered=filtered.filter(function(s){return s.class===STATE.filterClass;});if(q){var ql=q.toLowerCase();filtered=filtered.filter(function(s){return s.name.toLowerCase().includes(ql)||s.id.toLowerCase().includes(ql);});}
-  var html='<div class="card"><div class="card-header"><h3><i class="fas fa-user-graduate"></i> 學生賬戶</h3><div class="btn-group"><button class="btn btn-pri btn-sm" onclick="showAddStudent()"><i class="fas fa-plus"></i> 新增</button><button class="btn btn-sec btn-sm" onclick="showBatchActions()"><i class="fas fa-cogs"></i> 批量</button></div></div><div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;"><div class="form-group" style="margin:0;flex:1;min-width:180px;"><input type="text" placeholder="🔍 搜尋學生..." value="'+escapeHtml(q)+'" oninput="STATE.searchQuery=this.value;render()"></div><div class="form-group" style="margin:0;min-width:120px;"><select onchange="STATE.filterClass=this.value;render()"><option value="all">所有班別</option>'+classes.map(function(c){return '<option value="'+c+'" '+(STATE.filterClass===c?'selected':'')+'>'+c+'</option>';}).join('')+'</select></div></div><div class="table-wrap"><table><thead><tr><th>編號</th><th>用戶名</th><th>姓名</th><th>班別</th><th>密碼</th><th>操作</th></tr></thead><tbody>';
+  var html='<div class="card"><div class="card-header"><h3><i class="fas fa-user-graduate"></i> 學生賬戶</h3><div class="btn-group"><button class="btn btn-pri btn-sm" onclick="showAddStudent()"><i class="fas fa-plus"></i> 新增</button><button class="btn btn-sec btn-sm" onclick="showBatchActions()"><i class="fas fa-cogs"></i> 批量</button><button class="btn btn-success btn-sm" onclick="showImportStudentsExcel()"><i class="fas fa-file-excel"></i> 匯入 Excel</button></div></div><div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;"><div class="form-group" style="margin:0;flex:1;min-width:180px;"><input type="text" placeholder="🔍 搜尋學生..." value="'+escapeHtml(q)+'" oninput="STATE.searchQuery=this.value;render()"></div><div class="form-group" style="margin:0;min-width:120px;"><select onchange="STATE.filterClass=this.value;render()"><option value="all">所有班別</option>'+classes.map(function(c){return '<option value="'+c+'" '+(STATE.filterClass===c?'selected':'')+'>'+c+'</option>';}).join('')+'</select></div></div><div class="table-wrap"><table><thead><tr><th>編號</th><th>用戶名</th><th>姓名</th><th>班別</th><th>密碼</th><th>操作</th></tr></thead><tbody>';
   filtered.forEach(function(s){html+='<tr><td>'+s.id+'</td><td>'+escapeHtml(s.username)+'</td><td><strong>'+escapeHtml(s.name)+'</strong></td><td><span class="perm-tag perm-student">'+s.class+'</span></td><td><code style="background:#f0f0f0;padding:2px 6px;border-radius:4px;font-size:12px;">'+escapeHtml(s.password)+'</code></td><td><div class="btn-group"><button class="btn btn-pri btn-icon" onclick="showEditStudent(\''+s.id+'\')"><i class="fas fa-edit"></i></button><button class="btn btn-icon" style="background:linear-gradient(90deg,#f72585,#7209b7);color:#fff;" onclick="enterPreviewAs(\''+s.id+'\')"><i class="fas fa-eye"></i></button><button class="btn btn-danger btn-icon" onclick="deleteStudent(\''+s.id+'\')"><i class="fas fa-trash"></i></button></div></td></tr>';});
   html+='</tbody></table></div></div>';return html;
 }
@@ -1073,6 +1074,164 @@ function postRender(){
   setTimeout(loadDriveImages, 100);
 }
 
+function downloadStudentTemplate() {
+  var wb = XLSX.utils.book_new();
+  var sampleData = [
+    ['id', 'username', 'password', 'name', 'class'],
+    ['S101', 'student101', '123456', '陳小明', '4A'],
+    ['S102', 'student102', '123456', '李大文', '4A'],
+    ['S103', 'student103', '123456', '王美美', '4B']
+  ];
+  var ws = XLSX.utils.aoa_to_sheet(sampleData);
+  ws['!cols'] = [{wch:10},{wch:15},{wch:12},{wch:12},{wch:8}];
+  XLSX.utils.book_append_sheet(wb, ws, '學生名單');
+  XLSX.writeFile(wb, '學生匯入範本.xlsx');
+  toast('範本已下載', 'success');
+}
+
+
+function showImportStudentsExcel() {
+  showModal(
+    '<h3><i class="fas fa-file-excel" style="color:#06d6a0"></i> 批量匯入學生（Excel）</h3>' +
+    '<div class="modal-section">' +
+      '<h4><i class="fas fa-download"></i> 第一步：下載範本</h4>' +
+      '<p style="font-size:13px;color:var(--text-light);margin-bottom:10px;">請先下載範本，按格式填寫學生資料後再上傳。</p>' +
+      '<button class="btn btn-outline btn-sm" onclick="downloadStudentTemplate()"><i class="fas fa-download"></i> 下載範本 Excel</button>' +
+    '</div>' +
+    '<div class="modal-section">' +
+      '<h4><i class="fas fa-upload"></i> 第二步：上傳 Excel</h4>' +
+      '<p style="font-size:13px;color:var(--text-light);margin-bottom:10px;">必須包含欄位：<code>id</code>、<code>username</code>、<code>password</code>、<code>name</code>、<code>class</code></p>' +
+      '<input type="file" id="excel-upload" accept=".xlsx,.xls,.csv" onchange="previewExcelStudents(this)" style="margin-top:8px;">' +
+    '</div>' +
+    '<div id="excel-preview-area"></div>' +
+    '<div class="modal-actions">' +
+      '<button class="btn btn-outline" onclick="closeModal()">取消</button>' +
+      '<button class="btn btn-pri" id="btn-do-import" onclick="doImportStudentsExcel()" disabled><i class="fas fa-upload"></i> 確認匯入</button>' +
+    '</div>'
+  );
+}
+
+var _pendingImportStudents = [];
+
+function previewExcelStudents(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var wb = XLSX.read(e.target.result, {type: 'array'});
+      var ws = wb.Sheets[wb.SheetNames[0]];
+      var rows = XLSX.utils.sheet_to_json(ws, {defval: ''});
+
+      if (rows.length === 0) {
+        toast('Excel 中沒有資料', 'error');
+        return;
+      }
+
+      // 檢查必要欄位
+      var required = ['id', 'username', 'password', 'name', 'class'];
+      var headers = Object.keys(rows[0]);
+      var missing = required.filter(function(r) { return headers.indexOf(r) === -1; });
+      if (missing.length > 0) {
+        toast('缺少欄位：' + missing.join(', '), 'error');
+        document.getElementById('excel-preview-area').innerHTML =
+          '<div style="padding:12px;background:#fff3f3;border:1px solid #ffcdd2;border-radius:8px;color:#c62828;margin-top:12px;">' +
+          '<i class="fas fa-exclamation-triangle"></i> 缺少必要欄位：<strong>' + escapeHtml(missing.join(', ')) + '</strong>' +
+          '<br>需要的欄位：id, username, password, name, class</div>';
+        return;
+      }
+
+      // 驗證每一行
+      var valid = [];
+      var errors = [];
+      rows.forEach(function(row, idx) {
+        var r = {
+          id: String(row.id).trim(),
+          username: String(row.username).trim(),
+          password: String(row.password).trim(),
+          name: String(row.name).trim(),
+          class: String(row['class']).trim()
+        };
+        var errs = [];
+        if (!r.id) errs.push('缺少 id');
+        if (!r.username) errs.push('缺少 username');
+        if (!r.name) errs.push('缺少 name');
+        if (!r.class) errs.push('缺少 class');
+        if (!r.password) r.password = '123456';
+
+        // 檢查重複
+        if (USERS.students.find(function(s) { return s.id === r.id; })) errs.push('編號已存在');
+        if (USERS.students.find(function(s) { return s.username === r.username; })) errs.push('用戶名已存在');
+        if (USERS.teachers.find(function(t) { return t.username === r.username; })) errs.push('用戶名已存在(教師)');
+
+        if (errs.length > 0) {
+          errors.push('第 ' + (idx + 2) + ' 行：' + errs.join('、'));
+        } else {
+          valid.push(r);
+        }
+      });
+
+      _pendingImportStudents = valid;
+
+      // 生成預覽
+      var html = '<div style="margin-top:12px;">';
+      if (errors.length > 0) {
+        html += '<div style="padding:10px;background:#fff3f3;border:1px solid #ffcdd2;border-radius:8px;color:#c62828;margin-bottom:12px;font-size:13px;">' +
+          '<strong><i class="fas fa-exclamation-triangle"></i> ' + errors.length + ' 行有問題（將跳過）：</strong><br>' +
+          errors.map(function(e) { return escapeHtml(e); }).join('<br>') + '</div>';
+      }
+      if (valid.length > 0) {
+        html += '<div style="padding:10px;background:rgba(6,214,160,.1);border:1px solid rgba(6,214,160,.3);border-radius:8px;color:#05a67c;margin-bottom:12px;font-size:13px;">' +
+          '<i class="fas fa-check-circle"></i> 將匯入 <strong>' + valid.length + '</strong> 位學生</div>';
+        html += '<div class="table-wrap" style="max-height:250px;overflow-y:auto;"><table><thead><tr><th>編號</th><th>用戶名</th><th>姓名</th><th>班別</th><th>密碼</th></tr></thead><tbody>';
+        valid.forEach(function(r) {
+          html += '<tr><td>' + escapeHtml(r.id) + '</td><td>' + escapeHtml(r.username) + '</td><td>' + escapeHtml(r.name) + '</td><td>' + escapeHtml(r.class) + '</td><td>' + escapeHtml(r.password) + '</td></tr>';
+        });
+        html += '</tbody></table></div>';
+      }
+      html += '</div>';
+
+      document.getElementById('excel-preview-area').innerHTML = html;
+      document.getElementById('btn-do-import').disabled = (valid.length === 0);
+
+    } catch (err) {
+      toast('無法讀取 Excel：' + err.message, 'error');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+async function doImportStudentsExcel() {
+  if (_pendingImportStudents.length === 0) {
+    toast('沒有可匯入的資料', 'error');
+    return;
+  }
+  showLoading('正在匯入 ' + _pendingImportStudents.length + ' 位學生...');
+  var success = 0;
+  var fail = 0;
+  for (var i = 0; i < _pendingImportStudents.length; i++) {
+    var s = _pendingImportStudents[i];
+    var result = await apiCall('addUser', {
+      id: s.id,
+      username: s.username,
+      password: s.password,
+      name: s.name,
+      role: 'student',
+      class: s.class
+    });
+    if (result.success) success++;
+    else fail++;
+  }
+  await reloadData();
+  _pendingImportStudents = [];
+  hideLoading();
+  closeModal();
+  toast('匯入完成：成功 ' + success + ' 位' + (fail > 0 ? '，失敗 ' + fail + ' 位' : ''), fail > 0 ? 'warn' : 'success');
+  render();
+}
+  
+
+  
 // ==================== STARTUP ====================
 (function(){
   if(API_URL==='YOUR_APPS_SCRIPT_WEB_APP_URL_HERE'){
